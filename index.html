@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Lab3 :)</title>
+        <script src="./node_modules/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+        <script src="./node_modules/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+        <script src="./node_modules/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+        <script src="./node_modules/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+        <script type="importmap">
+          {
+            "imports": {
+              "three": "./node_modules/three/build/three.module.js",
+              "three.meshline": "./node_modules/three.meshline/src/THREE.MeshLine.js"
+            }
+          }
+        </script>
+    </head>
+    <body>
+      <div class="container">
+        <video class="input_video" hidden></video>
+        <canvas class="output_canvas" width="640px" height="480px"></canvas>
+      </div>
+      <script type="module" src="sample.js"></script>
+    </body>
+</html>
