@@ -9,15 +9,16 @@
         <script type="importmap">
           {
             "imports": {
-              "three": "./node_modules/three/build/three.module.js",
-              "three.meshline": "./node_modules/three.meshline/src/THREE.MeshLine.js"
+              "three": "./node_modules/three/build/three.module.js"
             }
           }
         </script>
     </head>
     <body>
       <div class="container">
-        <video class="input_video" hidden></video>
+        <video class="input_video" playsinline hidden loop style="display:none">
+          <source src="./video.mp4" type='video/mp4'>
+        </video>
         <canvas class="output_canvas" width="640px" height="480px"></canvas>
       </div>
       <script type="module" src="sample.js"></script>

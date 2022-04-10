@@ -88,11 +88,7 @@ light.visible = false;
 scene.add(light2);
 scene.add(light3);
 
-//animate();
-//function animate() {
-//    requestAnimationFrame( animate );
-//    renderer.render( scene, camera );
-//}
+
 // https://beautifier.io/
 
 const faceMesh = new FaceMesh({locateFile: (file) => {
@@ -331,11 +327,35 @@ faceMesh.setOptions({
 });
 faceMesh.onResults(onResults);
 
-const webcamera = new Camera(videoElement, {
-  onFrame: async () => {
-    await faceMesh.send({image: videoElement});
-  },
-  width: 640,
-  height: 480,
-});
-webcamera.start();
+//const webcamera = new Camera(videoElement, {
+//  onFrame: async () => {
+//    await faceMesh.send({image: videoElement});
+//  },
+//  width: 640,
+//  height: 480,
+//});
+//webcamera.start();
+
+//animate();
+//function animate() {
+//    requestAnimationFrame( animate );
+////    renderer.render( scene, camera );
+//}
+
+function startEstimation(video, ctx_w, ctx_h) {
+  let width = video.videoWidth;
+  let height = video.videoHeight;
+
+  canvasElement.width = ctx_w;
+  canvasElement.height = ctx_h;
+
+  video.play();
+
+  async function detectionFrame(now, metadata) {
+    await faceMesh.send({ image: video }); // processing
+    video.requestVideoFrameCallback(detectionFrame);
+  }
+  video.requestVideoFrameCallback(detectionFrame);
+  console.log("Processing started");
+}
+startEstimation(videoElement, render_w, render_h);
