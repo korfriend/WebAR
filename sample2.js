@@ -60,6 +60,7 @@ let unit_w = unit_h / render_h * render_w;
 const plane_geometry = new THREE.PlaneGeometry( unit_w * camera_ar.far, unit_h * camera_ar.far);
 const plane_material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide, map:texture3} );
 const plane_bg = new THREE.Mesh( plane_geometry, plane_material );
+plane_bg.position.set(0, 0, -400);
 scene.add( plane_bg );
 
 //scene.background = texture;
@@ -165,7 +166,7 @@ function onResults(results) {
         let count_landmarks_faceoval = FACEMESH_FACE_OVAL.length;
         if(points_faceoval == null) {
             geometry_faceoval.setAttribute('position', new THREE.BufferAttribute(
-                new Float32Array(count_landmarks_faceoval * 3), 3));
+                new Float32Array((count_landmarks_faceoval + 1) * 3), 3));
                 
             points_faceoval = new THREE.Points(geometry_faceoval, 
                 new THREE.PointsMaterial({color:0xFF0000, size: 1, sizeAttenuation: true}));
@@ -223,6 +224,11 @@ function onResults(results) {
 
             linePoints[i] = p_ms;
         }
+        oval_positions[count_landmarks_faceoval * 3 + 0] = oval_positions[0];
+        oval_positions[count_landmarks_faceoval * 3 + 1] = oval_positions[1];
+        oval_positions[count_landmarks_faceoval * 3 + 2] = oval_positions[2];
+        linePoints[count_landmarks_faceoval] = linePoints[0];
+
         let positions = face_mesh.geometry.attributes.position.array;
         let uvs = face_mesh.geometry.attributes.uv.array;
         let p_center = new THREE.Vector3(0, 0, 0);
