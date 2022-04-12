@@ -83,13 +83,92 @@ lensflare.addElement( new LensflareElement( textureFlare3, 120, 0.9 ) );
 lensflare.addElement( new LensflareElement( textureFlare3, 70, 1 ) );
 
 light.add( lensflare );
-light.visible = false;
+light.visible = true;
 //scene.add(light);
 scene.add(light2);
 scene.add(light3);
 
+let light_helper = new THREE.DirectionalLightHelper(light2, 0.3);
+function update_light(pos) {
+  light2.position.set(pos.x, pos.y, pos.z);
+  scene.remove(light_helper);
+  light_helper = new THREE.DirectionalLightHelper(light2, 0.3);
+  scene.add(light_helper);
+}
+
 
 // https://beautifier.io/
+container.addEventListener("mousedown", mouseDownHandler, false);
+container.addEventListener("mousemove", mouseMoveHandler, false);
+
+let pos_light_satrt = new THREE.Vector3(), pos_np_start;
+function mouseDownHandler(e) {
+  // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+  if(e.which == 1) // e.which
+      console.log("L brn : " + e.clientX  + ", " + e.clientY);
+  else if (e.which == 3)
+      console.log("R brn : " + e.clientX  + ", " + e.clientY);
+
+  pos_light_satrt.copy(light.position);
+  pos_np_start = compute_pos_ps2ws(e.clientX, e.clientY);
+}
+
+function mouseMoveHandler(e) {
+  if(e.which == 1) {
+      let pos_np_end = compute_pos_ps2ws(e.clientX, e.clientY);
+      let vec_cam2pos_s = new THREE.Vector3();
+      let vec_cam2pos_e = new THREE.Vector3();
+      vec_cam2pos_s.subVectors(pos_np_start, pos_cam_start);
+      vec_cam2pos_e.subVectors(pos_np_end, pos_cam_start);
+      let vec_rot_axis = new THREE.Vector3();
+      vec_rot_axis.crossVectors(vec_cam2pos_e, vec_cam2pos_s);
+      vec_rot_axis.normalize();
+      let angle_rad = vec_cam2pos_s.angleTo(vec_cam2pos_e);
+      let mat_rot = new THREE.Matrix4().makeRotationAxis(vec_rot_axis, angle_rad * rot_sensitive);
+      mat_rot.multiply(new THREE.Matrix4().makeTranslation(-cube.position.x, -cube.position.y, -cube.position.z));
+      mat_rot.premultiply(new THREE.Matrix4().makeTranslation(cube.position.x, cube.position.y, cube.position.z));
+      if(mode_movement == "object") {
+          let matrixWorld = cube_matrixWorld_start.clone();
+          matrixWorld.premultiply(mat_rot);
+          cube.matrix.copy(matrixWorld);
+          cube.updateMatrixWorld(true);
+      }
+      else {
+          let pos_light = pos_light_satrt.clone();
+          pos_light.applyMatrix4(mat_rot);
+          update_light(pos_light);
+      }
+  }
+  else if(e.which == 3) {
+      let pos_np_end = compute_pos_ps2ws(e.clientX, e.clientY);
+      let vec_cam2cube = new THREE.Vector3();
+      vec_cam2cube.subVectors(cube.position, controls.object.position);
+      let dist = vec_cam2cube.length();
+
+      let vec_np_s2e = new THREE.Vector3();
+      vec_np_s2e.subVectors(pos_np_end, pos_np_start);
+
+      let vec_s2e_cube = new THREE.Vector3(vec_np_s2e);
+      vec_s2e_cube.copy(vec_np_s2e).multiplyScalar(dist / controls.object.near);
+
+      let pos_pan = new THREE.Vector3();
+
+      if(mode_movement == "object") {
+          pos_pan.addVectors(pos_cube_start, vec_s2e_cube);
+          cube.position.set(pos_pan.x, pos_pan.y, pos_pan.z); // just for reference...
+          let matrixWorld = new THREE.Matrix4().makeTranslation(vec_s2e_cube.x, vec_s2e_cube.y, vec_s2e_cube.z);
+          matrixWorld.multiply(cube_matrixWorld_start);
+          cube.matrix.copy(matrixWorld);
+          cube.updateMatrixWorld(true);
+          update_light(light.position);
+      }
+      else {
+          pos_pan.addVectors(pos_light_satrt, vec_s2e_cube);
+          update_light(pos_pan);
+      }
+  }
+}
+
 
 const faceMesh = new FaceMesh({locateFile: (file) => {
     return `./node_modules/@mediapipe/face_mesh/${file}`;
@@ -252,7 +331,7 @@ function onResults(results) {
             lm_il[2] += p.z / count_landmarks_left_iris;
         }
         let p_il_ms = new THREE.Vector3((lm_il[0] - 0.5) * 2.0, -(lm_il[1] - 0.5) * 2.0, lm_il[2]).unproject(camera);
-        p_il_ms = ProjScale(p_il_ms, camera.position, avr_dist, 100.0);
+        p_il_ms = ProjScale(p_il_ms, camera.position, avr_dist, 99.9);
         //console.log(p_il_ms.x + ", " + p_il_ms.y + ", " + p_il_ms.z);
         sphere_iris.matrix = new THREE.Matrix4().makeTranslation(p_il_ms.x, p_il_ms.y, p_il_ms.z);
         sphere_iris.updateMatrixWorld(true);
@@ -260,7 +339,6 @@ function onResults(results) {
 
         light.visible = true;
         light.position.copy( p_il_ms );
-        light2.position.copy( new THREE.Vector3().addVectors(camera.position, new THREE.Vector3(100, 0, 0)));
         light2.target = face_mesh;
         //console.log(count_landmarks_left_iris);
   
@@ -298,6 +376,7 @@ function onResults(results) {
         renderer.setViewport(0, 0, render_w, render_h);
         renderer.render( scene, camera );
         renderer.autoClear = false;
+        renderer.clearDepth();
         renderer.setViewport(0, 0, render_w/3, render_h/3);
         renderer.render( scene_model, camera_model );
 
