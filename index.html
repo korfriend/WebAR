@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <meta charset="utf-8">
+        <link type="text/css" rel="stylesheet" href="./main.css">
         <title>Lab3 :)</title>
         <script src="./node_modules/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
         <script src="./node_modules/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
@@ -15,6 +18,10 @@
         </script>
     </head>
     <body>
+      <div id="info">
+        Touch & Drag - Move a light (on near plane) <br>
+        Zoom Action - Move the near plane
+      </div>
       <div class="container">
         <video class="input_video" playsinline hidden loop style="display:none" muted src="./video1.mov">
         </video>

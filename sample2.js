@@ -20,17 +20,21 @@ const renderer_world = new THREE.WebGLRenderer({ antialias: true });
 renderer_ar.setSize(render_w, render_h);
 renderer_world.setSize(render_w, render_h);
 
+const dpr = window.devicePixelRatio;
+renderer_ar.setPixelRatio( dpr );
+renderer_world.setPixelRatio( dpr );
+
 document.body.appendChild (renderer_ar.domElement);
 document.body.appendChild (renderer_world.domElement);
 
 const camera_ar = new THREE.PerspectiveCamera( 63, render_w/render_h, 20.0, 500);
-const camera_world = new THREE.PerspectiveCamera( 75, render_w/render_h, 1.0, 10000);
+const camera_world = new THREE.PerspectiveCamera( 63, render_w/render_h, 1.0, 10000);
 camera_ar.position.set( 0, 0, 100 );
 camera_ar.up.set(0, 1, 0);
 camera_ar.lookAt( 0, 0, 0 );
 camera_ar.updateProjectionMatrix();
 
-camera_world.position.set( 200, 0, 0 );
+camera_world.position.set( 200, 0, 200 );
 camera_world.up.set(0, 1, 0);
 camera_world.lookAt( 0, 0, 0 );
 
@@ -107,7 +111,7 @@ let camera_ar_helper = new THREE.CameraHelper( camera_ar );
 scene.add( camera_ar_helper );
 
 // https://beautifier.io/
-renderer_ar.domElement.addEventListener("mousedown", mouseDownHandler, false);
+renderer_ar.domElement.addEventListener("mousedown", mouseMoveHandler, false);
 renderer_ar.domElement.addEventListener("mousemove", mouseMoveHandler, false);
 renderer_ar.domElement.addEventListener("wheel", mouseWheelHandler, false);
 
@@ -132,22 +136,27 @@ function ProjScale(p_ms, cam_pos, src_d, dst_d) {
     return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
 }
 
-let pos_light_np = null;
+let x_prev = render_w / 2;
+let y_prev = render_h / 2;
 function mouseMoveHandler(e) {
   if(e.which == 1) {
-      pos_light_np = compute_pos_ps2ws(e.clientX, e.clientY);
-      let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
-      update_light(pos_light);
+      let pos_light_np = compute_pos_ps2ws(e.clientX, e.clientY);
+      //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
+      update_light(pos_light_np);
+      x_prev = e.clientX;
+      y_prev = e.clientY;
   }
 }
 
 function mouseWheelHandler(e) {
-    if(pos_light_np != null) {
-        e.preventDefault();
-        light_plane_dist += e.deltaY * -0.01;
-        let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
-        update_light(pos_light);
-    }
+    e.preventDefault();
+    //light_plane_dist += e.deltaY * -0.01;
+    camera_ar.near += e.deltaY * -0.01;
+    camera_ar.updateProjectionMatrix();
+    //camera_ar_helper.update();
+    let pos_light_np = compute_pos_ps2ws(x_prev, y_prev);
+    //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
+    update_light(pos_light_np);
 }
 
 
