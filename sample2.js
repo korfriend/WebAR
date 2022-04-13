@@ -1,4 +1,4 @@
-const videoElement = document.getElementsByClassName('input_video')[0];
+let videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 canvasElement.style.display="none";
 const canvasCtx = canvasElement.getContext('2d');
@@ -13,12 +13,80 @@ import { Line2 } from './node_modules/three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from './node_modules/three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from './node_modules/three/examples/jsm/lines/LineGeometry.js';
 
-const render_w = 640;
-const render_h = 480;
+// https://www.digitalocean.com/community/tutorials/front-and-rear-camera-access-with-javascripts-getusermedia
+//let stream = await navigator.mediaDevices.getUserMedia({video: true});
+//let {width, height} = stream.getTracks()[0].getSettings();
+//console.log(`${width}x${height}`); // 640x480
+if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+  console.log("Let's get this party started")
+}
+//navigator.mediaDevices.getUserMedia({video: true});
+//const constraints = {
+//  video: {
+//    width: {
+//      min: 640,
+//      ideal: 640,
+//      max: 640,
+//    },
+//    height: {
+//      min: 480,
+//      ideal: 480,
+//      max: 480
+//    },
+//  }
+//};
+const devices = await navigator.mediaDevices.enumerateDevices();
+const videoDevices = devices.filter(device => device.kind === 'videoinput');
+let rgb_video = videoDevices[0];
+for(let vd of videoDevices) {
+  console.log(vd.label);
+  if(vd.label.includes("Module RGB")) {
+    rgb_video = vd;
+    break;
+  }
+}
+console.log(rgb_video);
+//navigator.mediaDevices.getUserMedia({video: {deviceId: {exact: rgb_video}}});
+//videoElement.play();
+//const cameraOptions = document.querySelector('.video-options>select');
+//const getCameraSelection = async () => {
+//  const devices = await navigator.mediaDevices.enumerateDevices();
+//  const videoDevices = devices.filter(device => device.kind === 'videoinput');
+//  const options = videoDevices.map(videoDevice => {
+//    return `<option value="${videoDevice.deviceId}">${videoDevice.label}</option>`;
+//  });
+//  cameraOptions.innerHTML = options.join('');
+//};
+//getCameraSelection();
+
+let is_camera_mode = videoDevices.length > 0;
+
+if(!is_camera_mode) {
+  videoElement = document.getElementsByClassName('input_recorded_video')[0];
+}
+console.log(videoElement.videoWidth + ", " + videoElement.videoHeight);
+console.log(videoElement.width + ", " + videoElement.height);
+
+const aspect_ratio = is_camera_mode?  640 / 480.0 : videoElement.videoWidth / videoElement.videoHeight;
+
+const render_w_ar = is_camera_mode? Math.min(640, document.documentElement.clientWidth) : Math.min(Math.min(videoElement.videoWidth, document.documentElement.clientWidth), 640);
+const render_h_ar = render_w_ar / aspect_ratio;
+//videoElement.setAttribute('width', (render_w_ar/10).toString() + "px");
+//videoElement.setAttribute('height', render_h_ar.toString() + "px");
+//console.log(videoElement.videoWidth + ", " + videoElement.videoHeight);
+videoElement.width = render_w_ar;
+videoElement.height = render_h_ar;
+
+const aspect_ratio_world = 640.0 / 480.0;
+const render_w = Math.min(640, document.documentElement.clientWidth);
+const render_h = render_w / aspect_ratio_world;
 const renderer_ar = new THREE.WebGLRenderer({ antialias: true });
 const renderer_world = new THREE.WebGLRenderer({ antialias: true });
-renderer_ar.setSize(render_w, render_h);
+renderer_ar.setSize(render_w_ar, render_h_ar);
 renderer_world.setSize(render_w, render_h);
+
+const testElement = document.getElementById('test');
+testElement.textContent = devices.length;
 
 //const dpr = window.devicePixelRatio;
 //renderer_ar.setPixelRatio( dpr );
@@ -27,8 +95,8 @@ renderer_world.setSize(render_w, render_h);
 document.body.appendChild (renderer_ar.domElement);
 document.body.appendChild (renderer_world.domElement);
 
-const camera_ar = new THREE.PerspectiveCamera( 63, render_w/render_h, 60.0, 500);
-const camera_world = new THREE.PerspectiveCamera( 63, render_w/render_h, 1.0, 10000);
+const camera_ar = new THREE.PerspectiveCamera( 63, aspect_ratio, 60.0, 500);
+const camera_world = new THREE.PerspectiveCamera( 63, aspect_ratio_world, 1.0, 10000);
 camera_ar.position.set( 0, 0, 100 );
 camera_ar.up.set(0, 1, 0);
 camera_ar.lookAt( 0, 0, 0 );
@@ -43,26 +111,16 @@ controls.enableDamping = true;
 
 const scene = new THREE.Scene();
 
-const texture = new THREE.VideoTexture( videoElement );
-texture.center = new THREE.Vector2(0.5, 0.5);
-texture.rotation = Math.PI;
-texture.flipY = false;
-
-const texture2 = new THREE.VideoTexture( videoElement );
-texture2.center = new THREE.Vector2(0.5, 0.5);
-texture2.rotation = Math.PI;
-texture2.flipY = false;
-
-const texture3 = new THREE.VideoTexture( videoElement );
-texture3.center = new THREE.Vector2(0.5, 0.5);
-texture3.rotation = Math.PI;
-texture3.flipY = false;
+//const texture = new THREE.VideoTexture( videoElement );
+//texture.center = new THREE.Vector2(0.5, 0.5);
+//texture.rotation = Math.PI;
+//texture.flipY = false;
 
 const degrees_to_radians = deg => (deg * Math.PI) / 180.0;
 let unit_h = Math.tan(degrees_to_radians(camera_ar.fov / 2.0)) * 2;
 let unit_w = unit_h / render_h * render_w;
 const plane_geometry = new THREE.PlaneGeometry( unit_w * camera_ar.far, unit_h * camera_ar.far);
-const plane_material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide, map:texture3} );
+const plane_material = new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
 const plane_bg = new THREE.Mesh( plane_geometry, plane_material );
 plane_bg.position.set(0, 0, -400);
 scene.add( plane_bg );
@@ -296,8 +354,8 @@ function onResults(results) {
             face_geometry.setIndex(TRIANGULATION);
             //let face_material1 = new THREE.MeshBasicMaterial({ color: 0xffffff, map:texture  });
             let face_material2 = new THREE.MeshPhongMaterial(
-                { color: new THREE.Color(1.0, 1.0, 1.0), map:texture, 
-                    specular: new THREE.Color(0, 0, 0), shininess:1000  });
+                { color: new THREE.Color(1.0, 1.0, 1.0),  
+                    specular: new THREE.Color(0, 0, 0), shininess:1000 });
             face_mesh = new THREE.Mesh(face_geometry, face_material2);
             console.log("# of landmarks : " + landmarks.length);
             console.log("THREE GEOMETRY SET!");
@@ -375,27 +433,10 @@ function onResults(results) {
         light_flare.visible = true;
         light_flare.position.copy( p_il_ms );
         light.target = face_mesh;
+
         //console.log(count_landmarks_left_iris);
 
-        controls.update(); // camera_world
-
-        light_helper.update();
-        camera_ar_helper.update();
-
-        scene.background = texture;
-        face_mesh.material.map = texture;
-        scene.remove(light_helper);
-        scene.remove(camera_ar_helper);
-        scene.remove( plane_bg );
-        renderer_ar.render( scene, camera_ar );
-        scene.background = null;
-        face_mesh.material.map = texture2;
-        scene.add(light_helper);
-        scene.add(camera_ar_helper);
-        scene.add( plane_bg );
         //texture.update();
-        renderer_world.render( scene, camera_world );
-
 
       //drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION,
       //               {color: '#C0C0C070', lineWidth: 1});
@@ -407,6 +448,30 @@ function onResults(results) {
       //drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_IRIS, {color: '#30FF30'});
       //drawConnectors(canvasCtx, landmarks, FACEMESH_FACE_OVAL, {color: '#E0E0E0'});
       //drawConnectors(canvasCtx, landmarks, FACEMESH_LIPS, {color: '#E0E0E0'});
+    }
+    if(face_mesh != null) {
+      controls.update(); // camera_world
+  
+      light_helper.update();
+      camera_ar_helper.update();
+  
+      //console.log(results.image);
+      let texture_frame = new THREE.CanvasTexture(results.image);
+  
+      plane_material.map = texture_frame;
+      //plane_material.update();
+      scene.background = texture_frame;
+      face_mesh.material.map = texture_frame;
+      scene.remove(light_helper);
+      scene.remove(camera_ar_helper);
+      scene.remove( plane_bg );
+      renderer_ar.render( scene, camera_ar );
+      scene.background = null;
+      face_mesh.material.map = texture_frame;
+      scene.add(light_helper);
+      scene.add(camera_ar_helper);
+      scene.add( plane_bg );
+      renderer_world.render( scene, camera_world );
     }
   }
   canvasCtx.restore();
@@ -426,10 +491,9 @@ const webcamera = new Camera(videoElement, {
   onFrame: async () => {
     await faceMesh.send({image: videoElement});
   },
-  width: 640,
-  height: 480,
+  width: render_w_ar,
+  //height: render_h_ar,
 });
-//webcamera.start();
 
 //animate();
 //function animate() {
@@ -438,9 +502,6 @@ const webcamera = new Camera(videoElement, {
 //}
 
 function startEstimation(video, ctx_w, ctx_h) {
-  let width = video.videoWidth;
-  let height = video.videoHeight;
-
   canvasElement.width = ctx_w;
   canvasElement.height = ctx_h;
 
@@ -453,4 +514,9 @@ function startEstimation(video, ctx_w, ctx_h) {
   video.requestVideoFrameCallback(detectionFrame);
   console.log("Processing started");
 }
-startEstimation(videoElement, render_w, render_h);
+
+if(is_camera_mode)
+  webcamera.start();
+else 
+  startEstimation(videoElement, render_w_ar, render_h_ar);
+//startEstimation(videoElement, render_w_ar, render_h_ar);
