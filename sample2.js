@@ -178,11 +178,11 @@ function onResults(results) {
                 new Float32Array((count_landmarks_faceoval + 1) * 3), 3));
                 
             points_faceoval = new THREE.Points(geometry_faceoval, 
-                new THREE.PointsMaterial({color:0xFF0000, size: 1, sizeAttenuation: true}));
+                new THREE.PointsMaterial({color:0xFF0000, size: 3, sizeAttenuation: true}));
 
             let matFatLine = new LineMaterial( {
                 color: 0x00ff00,
-                linewidth: 5, // in world units with size attenuation, pixels otherwise
+                linewidth: 3, // in world units with size attenuation, pixels otherwise
                 worldUnits: false,
                 //vertexColors: true,
                 //resolution:  // to be set by renderer, eventually
