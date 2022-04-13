@@ -20,14 +20,14 @@ const renderer_world = new THREE.WebGLRenderer({ antialias: true });
 renderer_ar.setSize(render_w, render_h);
 renderer_world.setSize(render_w, render_h);
 
-const dpr = window.devicePixelRatio;
-renderer_ar.setPixelRatio( dpr );
-renderer_world.setPixelRatio( dpr );
+//const dpr = window.devicePixelRatio;
+//renderer_ar.setPixelRatio( dpr );
+//renderer_world.setPixelRatio( dpr );
 
 document.body.appendChild (renderer_ar.domElement);
 document.body.appendChild (renderer_world.domElement);
 
-const camera_ar = new THREE.PerspectiveCamera( 63, render_w/render_h, 20.0, 500);
+const camera_ar = new THREE.PerspectiveCamera( 63, render_w/render_h, 60.0, 500);
 const camera_world = new THREE.PerspectiveCamera( 63, render_w/render_h, 1.0, 10000);
 camera_ar.position.set( 0, 0, 100 );
 camera_ar.up.set(0, 1, 0);
@@ -111,9 +111,19 @@ let camera_ar_helper = new THREE.CameraHelper( camera_ar );
 scene.add( camera_ar_helper );
 
 // https://beautifier.io/
-renderer_ar.domElement.addEventListener("mousedown", mouseMoveHandler, false);
-renderer_ar.domElement.addEventListener("mousemove", mouseMoveHandler, false);
-renderer_ar.domElement.addEventListener("wheel", mouseWheelHandler, false);
+renderer_ar.domElement.style = "touch-action:none";
+renderer_ar.domElement.onpointerdown = mouseDownHandler;
+renderer_ar.domElement.onpointermove = mouseMoveHandler;
+renderer_ar.domElement.onpointerup = mouseUpHandler;
+renderer_ar.domElement.onpointercancel = mouseUpHandler;
+renderer_ar.domElement.onpointerout = mouseUpHandler;
+renderer_ar.domElement.onpointerleave = mouseUpHandler;
+
+renderer_ar.domElement.onwheel = mouseWheelHandler;
+//renderer_ar.domElement.addEventListener("pointerdown", mouseDownHandler, false);
+//renderer_ar.domElement.addEventListener("pointermove", mouseMoveHandler, false);
+//renderer_ar.domElement.addEventListener("pointerup", mouseUpHandler, false);
+//renderer_ar.domElement.addEventListener("wheel", mouseWheelHandler, { passive: false });
 
 function compute_pos_ps2ws(x_ss, y_ss) {
     //console.log(x_ss / window.innerWidth * 2 - 1)
@@ -123,12 +133,17 @@ function compute_pos_ps2ws(x_ss, y_ss) {
 }
 
 let light_plane_dist = camera_ar.near;
+let mouse_btn_flag = false;
 function mouseDownHandler(e) {
   // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-  if(e.which == 1) // e.which
-      console.log("L brn : " + e.clientX  + ", " + e.clientY);
-  else if (e.which == 3)
-      console.log("R brn : " + e.clientX  + ", " + e.clientY);
+  if(e.pointerType == 'mouse') {
+    mouse_btn_flag = true;
+    mouseMoveHandler(e);
+  }
+  else if(e.pointerType == 'touch') {
+    evCache.push(e);
+    console.log("pointerDown", e);
+  }
 }
 
 function ProjScale(p_ms, cam_pos, src_d, dst_d) {
@@ -136,27 +151,104 @@ function ProjScale(p_ms, cam_pos, src_d, dst_d) {
     return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
 }
 
+var evCache = new Array();
+var prevDiff = -1;
+function remove_event(ev) {
+  // Remove this event from the target's cache
+  for (var i = 0; i < evCache.length; i++) {
+    if (evCache[i].pointerId == ev.pointerId) {
+      evCache.splice(i, 1);
+      break;
+    }
+  }
+ }
+function mouseUpHandler(e) {
+  mouse_btn_flag = false;
+  console.log("GGGGL");
+  console.log(e);
+  if(e.pointerType != 'touch') return;
+  // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttonlog(ev.type, ev);
+  // Remove this pointer from the cache and reset the target's
+  // background and border
+  remove_event(e);
+  // If the number of pointers down is less than two then reset diff tracker
+  if (evCache.length < 2) {
+    prevDiff = -1;
+  }
+}
+
 let x_prev = render_w / 2;
 let y_prev = render_h / 2;
 function mouseMoveHandler(e) {
-  if(e.which == 1) {
+  if(e.pointerType == 'mouse') {
+    if(mouse_btn_flag) {
       let pos_light_np = compute_pos_ps2ws(e.clientX, e.clientY);
       //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
       update_light(pos_light_np);
       x_prev = e.clientX;
       y_prev = e.clientY;
+    }
+  }
+  else if(e.pointerType == 'touch') {
+    console.log("pointerMove", e);
+    //e.target.style.border = "dashed";
+
+    // Find this event in the cache and update its record with this event
+    for (var i = 0; i < evCache.length; i++) {
+      if (e.pointerId == evCache[i].pointerId) {
+        evCache[i] = e;
+        break;
+      }
+    }
+
+    if (evCache.length == 1) {
+      let pos_light_np = compute_pos_ps2ws(e.clientX, e.clientY);
+      //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
+      update_light(pos_light_np);
+      x_prev = e.clientX;
+      y_prev = e.clientY;
+    }
+    // If two pointers are down, check for pinch gestures
+    else if (evCache.length == 2) {
+      console.log("Pinch moving");
+      // Calculate the distance between the two pointers
+      var curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
+
+      if (prevDiff > 0) {
+        if (curDiff > prevDiff) {
+          // The distance between the two pointers has increased
+          console.log("Pinch moving OUT -> Zoom in", e);
+          camera_ar.near += 2.0;
+          camera_ar.near = Math.min(camera_ar.near, camera_ar.far);
+          camera_ar.updateProjectionMatrix();
+        }
+        if (curDiff < prevDiff) {
+          // The distance between the two pointers has decreased
+          console.log("Pinch moving IN -> Zoom out",e);
+          camera_ar.near -= 2.0;
+          camera_ar.near = Math.max(camera_ar.near, 1.0);
+          camera_ar.updateProjectionMatrix();
+        }
+        let pos_light_np = compute_pos_ps2ws(x_prev, y_prev);
+        update_light(pos_light_np);
+      }
+
+      // Cache the distance for the next move event
+      prevDiff = curDiff;
+    }
+    e.preventDefault();
   }
 }
 
 function mouseWheelHandler(e) {
-    e.preventDefault();
-    //light_plane_dist += e.deltaY * -0.01;
-    camera_ar.near += e.deltaY * -0.01;
-    camera_ar.updateProjectionMatrix();
-    //camera_ar_helper.update();
-    let pos_light_np = compute_pos_ps2ws(x_prev, y_prev);
-    //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
-    update_light(pos_light_np);
+  //e.preventDefault();
+  //light_plane_dist += e.deltaY * -0.01;
+  camera_ar.near += e.deltaY * -0.01;
+  camera_ar.updateProjectionMatrix();
+  //camera_ar_helper.update();
+  let pos_light_np = compute_pos_ps2ws(x_prev, y_prev);
+  //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
+  update_light(pos_light_np);
 }
 
 
@@ -330,13 +422,13 @@ faceMesh.setOptions({
 });
 faceMesh.onResults(onResults);
 
-//const webcamera = new Camera(videoElement, {
-//  onFrame: async () => {
-//    await faceMesh.send({image: videoElement});
-//  },
-//  width: 640,
-//  height: 480,
-//});
+const webcamera = new Camera(videoElement, {
+  onFrame: async () => {
+    await faceMesh.send({image: videoElement});
+  },
+  width: 640,
+  height: 480,
+});
 //webcamera.start();
 
 //animate();
