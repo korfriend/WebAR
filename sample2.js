@@ -131,6 +131,7 @@ let geometry_faceoval = new THREE.BufferGeometry();
 let linegeometry_faceoval = new LineGeometry();
 let points_faceoval = null;
 let lines_faceoval = null;
+let gl_lines_faceoval = null;
 let face_mesh = null;
 
 const textureLoader = new THREE.TextureLoader();
@@ -357,8 +358,17 @@ function onResults(results) {
                 { color: new THREE.Color(1.0, 1.0, 1.0),  
                     specular: new THREE.Color(0, 0, 0), shininess:1000 });
             face_mesh = new THREE.Mesh(face_geometry, face_material2);
+
+            let line_geo = new THREE.BufferGeometry();
+            line_geo.setAttribute('position', new THREE.BufferAttribute(
+                new Float32Array(count_landmarks_faceoval * 3), 3));
+            let line_mat = new THREE.LineBasicMaterial({color:0xFFFF00});
+            gl_lines_faceoval = new THREE.Line(line_geo, line_mat);
+
+
             console.log("# of landmarks : " + landmarks.length);
             console.log("THREE GEOMETRY SET!");
+            //scene.add(gl_lines_faceoval);
             scene.add(points_faceoval);
             scene.add(lines_faceoval);
             scene.add(face_mesh);
@@ -369,7 +379,7 @@ function onResults(results) {
         const center_dist = vec_cam2center.length();
     
         let oval_positions = points_faceoval.geometry.attributes.position.array;
-        let linePoints = []; linePoints.length = count_landmarks_faceoval;
+        //let linePoints = []; linePoints.length = count_landmarks_faceoval;
         for(let i = 0; i < count_landmarks_faceoval; i++) {
             //console.log(FACEMESH_FACE_OVAL[i][0]);
             const index = FACEMESH_FACE_OVAL[i][0];
@@ -381,12 +391,12 @@ function onResults(results) {
             oval_positions[i * 3 + 1] = p_ms.y;
             oval_positions[i * 3 + 2] = p_ms.z;
 
-            linePoints[i] = p_ms;
+            //linePoints[i] = p_ms;
         }
         oval_positions[count_landmarks_faceoval * 3 + 0] = oval_positions[0];
         oval_positions[count_landmarks_faceoval * 3 + 1] = oval_positions[1];
         oval_positions[count_landmarks_faceoval * 3 + 2] = oval_positions[2];
-        linePoints[count_landmarks_faceoval] = linePoints[0];
+        //linePoints[count_landmarks_faceoval] = linePoints[0];
 
         let positions = face_mesh.geometry.attributes.position.array;
         let uvs = face_mesh.geometry.attributes.uv.array;
@@ -410,7 +420,14 @@ function onResults(results) {
         //console.log(p_center.x + ", " + p_center.y + ", " + p_center.z);
         face_mesh.geometry.computeVertexNormals();
 
-        linegeometry_faceoval.setPositions(oval_positions);
+        //linegeometry_faceoval.setPositions(oval_positions);
+        lines_faceoval.geometry.setPositions(oval_positions);
+
+        //gl_lines_faceoval.geometry.attributes.position.array = oval_positions;
+        //gl_lines_faceoval.geometry.attributes.position.needsUpdate = true;
+        //console.log(lines_faceoval.geometry.attributes.position.array = oval_positions);
+        //lines_faceoval.geometry.attributes.position.needsUpdate = true;
+
         lines_faceoval.computeLineDistances();
         lines_faceoval.scale.set( 1, 1, 1 );
 
