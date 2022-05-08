@@ -9,6 +9,7 @@
     "@mediapipe/face_mesh": "^0.4.1633559619",
     "@mediapipe/pose": "^0.5.1635988162",
     "device-detector-js": "^3.0.2",
+    "kalidokit": "^1.1.5",
     "three": "^0.139.2",
     "three.meshline": "^1.4.0",
     "typescript": "^4.6.3"

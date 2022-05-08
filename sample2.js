@@ -210,6 +210,11 @@ function ProjScale(p_ms, cam_pos, src_d, dst_d) {
     return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
 }
 
+function ProjScale2(p_ms, cam_pos, src_d, dst_d) {
+    let vec_cam2p = new THREE.Vector3().subVectors(p_ms, cam_pos);
+    return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
+}
+
 var evCache = new Array();
 var prevDiff = -1;
 function remove_event(ev) {
@@ -369,8 +374,8 @@ function onResults(results) {
             console.log("# of landmarks : " + landmarks.length);
             console.log("THREE GEOMETRY SET!");
             //scene.add(gl_lines_faceoval);
-            scene.add(points_faceoval);
-            scene.add(lines_faceoval);
+            //scene.add(points_faceoval);
+            //scene.add(lines_faceoval);
             scene.add(face_mesh);
         }
         // now points_faceoval is NOT NULL
@@ -379,12 +384,19 @@ function onResults(results) {
         const center_dist = vec_cam2center.length();
     
         let oval_positions = points_faceoval.geometry.attributes.position.array;
+        const ip_lt = new THREE.Vector3(-1, 1, -1).unproject(camera_ar);
+        const ip_rb = new THREE.Vector3(1, -1, -1).unproject(camera_ar);
+        const ip_diff = new THREE.Vector3().subVectors(ip_rb, ip_lt);
+        const x_scale = Math.abs(ip_diff.x);
         //let linePoints = []; linePoints.length = count_landmarks_faceoval;
         for(let i = 0; i < count_landmarks_faceoval; i++) {
             //console.log(FACEMESH_FACE_OVAL[i][0]);
             const index = FACEMESH_FACE_OVAL[i][0];
             let p = landmarks[index];
             let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, p.z).unproject(camera_ar);
+            // here, z should be recomputed!
+            //let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, 0).unproject(camera_ar);
+            //p_ms.z = -p.z * x_scale;
             p_ms = ProjScale(p_ms, camera_ar.position, center_dist, 100.0);
 
             oval_positions[i * 3 + 0] = p_ms.x;
@@ -403,8 +415,17 @@ function onResults(results) {
         let p_center = new THREE.Vector3(0, 0, 0);
         for(let i = 0; i < landmarks.length; i++) {
             let p = landmarks[i];
-            let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, p.z).unproject(camera_ar);
-            p_ms = ProjScale(p_ms, camera_ar.position, center_dist, 100.0);
+            //let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, p.z).unproject(camera_ar);
+            // here, z should be recomputed!
+            let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, -1).unproject(camera_ar);
+            p_ms.z = -p.z * x_scale + camera_ar.position.z - camera_ar.near;
+            //p_ms = ProjScale(p_ms, camera_ar.position, center_dist, 100.0);
+            // camera_ar.near
+            p_ms = ProjScale(p_ms, camera_ar.position, camera_ar.near, 100.0);
+            //p_ms.z = -p.z * x_scale;
+
+            //let vec_cam2p = new THREE.Vector3().subVectors(p_ms, cam_pos);
+            //return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
 
             let pp = new THREE.Vector3().copy(p_ms);
             p_center.addVectors(p_center, pp.divideScalar(landmarks.length));

@@ -3,6 +3,7 @@ const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
 import * as THREE from './node_modules/three/build/three.module.js';
+import * as Kalidokit from './node_modules/kalidokit/dist/kalidokit.es.js'
 import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { TRIANGULATION } from './triangulation.js';
 import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
@@ -120,7 +121,7 @@ function onResults2(results) {
     canvasCtx.globalCompositeOperation = 'destination-atop';
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-    console.log(results.ea);
+    //console.log(results.ea);
     canvasCtx.globalCompositeOperation = 'source-over';
     drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
                   {color: '#00FF00', lineWidth: 2});
@@ -128,10 +129,21 @@ function onResults2(results) {
                   {color: '#FF0000', radius: 1});
     canvasCtx.restore();
   }
-  
-  let bn_test = skeleton.getBoneByName("mixamorigLeftShoulder");
-  console.log(bn_test.matrix);
-  bn_test.matrix = new THREE.Matrix4();
+
+  //Kalidokit.Pose.solve(results.poseLandmarks, {
+  //    runtime: "mediapipe", // `mediapipe` or `tfjs`
+  //    video: videoElement,
+  //    imageSize: { height: 462, width: 820 },
+  //    enableLegs: true,
+  //});
+  let poselm3d = results.poseLandmarks;
+  let poseRig = Kalidokit.Pose.solve(poselm3d,results.poseLandmarks,{runtime:'mediapipe',imageSize:{width:820, height:462}})
+  //console.log(poseRig);
+    
+
+  let bn_test = skeleton.getBoneByName("mixamorigHips");
+  //console.log(bn_test.matrix);
+  //bn_test.matrix = new THREE.Matrix4();
 
   renderer.render( scene, camera_ar );
   canvasCtx.restore();
