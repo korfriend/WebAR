@@ -59,7 +59,7 @@ console.log(rgb_video);
 //};
 //getCameraSelection();
 
-let is_camera_mode = videoDevices.length > 0;
+let is_camera_mode = false;// videoDevices.length > 0;
 
 if(!is_camera_mode) {
   videoElement = document.getElementsByClassName('input_recorded_video')[0];
@@ -95,6 +95,7 @@ testElement.textContent = devices.length;
 document.body.appendChild (renderer_ar.domElement);
 document.body.appendChild (renderer_world.domElement);
 
+//THREE.OrthographicCamera
 const camera_ar = new THREE.PerspectiveCamera( 63, aspect_ratio, 60.0, 500);
 const camera_world = new THREE.PerspectiveCamera( 63, aspect_ratio_world, 1.0, 10000);
 camera_ar.position.set( 0, 0, 100 );
@@ -159,6 +160,9 @@ light_flare.visible = true;
 //scene.add(light_flare);
 scene.add(light);
 scene.add(light_ambient);
+
+const axis_helper = new THREE.AxisHelper(20);
+scene.add(axis_helper);
 
 let light_helper = new THREE.DirectionalLightHelper(light, 0.3);
 function update_light(pos) {
@@ -421,7 +425,7 @@ function onResults(results) {
             p_ms.z = -p.z * x_scale + camera_ar.position.z - camera_ar.near;
             //p_ms = ProjScale(p_ms, camera_ar.position, center_dist, 100.0);
             // camera_ar.near
-            p_ms = ProjScale(p_ms, camera_ar.position, camera_ar.near, 100.0);
+            p_ms = ProjScale(p_ms, camera_ar.position, camera_ar.near, 300.0);
             //p_ms.z = -p.z * x_scale;
 
             //let vec_cam2p = new THREE.Vector3().subVectors(p_ms, cam_pos);
