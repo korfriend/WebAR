@@ -1,2 +1,2 @@
 # WebAR
-Web code using Mediapipe and Threejs
+Web-based AR application practices using Mediapipe and Threejs
