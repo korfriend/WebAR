@@ -2,11 +2,11 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
-import * as THREE from './node_modules/three/build/three.module.js';
-import * as Kalidokit from './node_modules/kalidokit/dist/kalidokit.es.js'
-import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
-import { TRIANGULATION } from './triangulation.js';
-import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three/build/three.module';
+import * as Kalidokit from 'kalidokit/dist/kalidokit.es'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TRIANGULATION } from '../triangulation.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 const render_w = 640;

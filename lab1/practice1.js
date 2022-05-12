@@ -1,5 +1,5 @@
-import * as THREE from './node_modules/three/build/three.module.js';
-import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
+import * as THREE from '../node_modules/three/build/three.module.js';
+import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -26,7 +26,7 @@ const material = new THREE.LineBasicMaterial( { color: 0xFFFFff } );
 const line = new THREE.Line( geometry, material );
 
 const geometry_box = new THREE.BoxGeometry( 5, 5, 5 );
-const texture = new THREE.TextureLoader().load( './teximg.jpg' );
+const texture = new THREE.TextureLoader().load( '../teximg.jpg' );
 const material_box = new THREE.MeshBasicMaterial( { color:0xFFFFFF, map:texture } );
 const box_mesh = new THREE.Mesh(geometry_box, material_box);
 box_mesh.matrixAutoUpdate = false;

@@ -2,15 +2,14 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
-//import { FACEMESH_FACE_OVAL } from "@mediapipe/face_mesh";
-import * as THREE from "./node_modules/three/build/three.module.js";
-import { OrbitControls } from "./node_modules/three/examples/jsm/controls/OrbitControls.js";
-import { Lensflare, LensflareElement } from './node_modules/three/examples/jsm/objects/Lensflare.js';
-import { TRIANGULATION } from './triangulation.js';
+import * as THREE from "three";
+import { OrbitControls } from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
+import { Lensflare, LensflareElement } from '../node_modules/three/examples/jsm/objects/Lensflare.js';
+import { TRIANGULATION } from '../triangulation.js';
 
-import { Line2 } from './node_modules/three/examples/jsm/lines/Line2.js';
-import { LineMaterial } from './node_modules/three/examples/jsm/lines/LineMaterial.js';
-import { LineGeometry } from './node_modules/three/examples/jsm/lines/LineGeometry.js';
+import { Line2 } from '../node_modules/three/examples/jsm/lines/Line2.js';
+import { LineMaterial } from '../node_modules/three/examples/jsm/lines/LineMaterial.js';
+import { LineGeometry } from '../node_modules/three/examples/jsm/lines/LineGeometry.js';
 
 const render_w = 640;
 const render_h = 480;
@@ -63,8 +62,8 @@ sphere_iris.visible = false;
 //scene.add( sphere_iris );
 
 const textureLoader = new THREE.TextureLoader();
-const textureFlare0 = textureLoader.load('./lensflare0.png');
-const textureFlare3 = textureLoader.load('./lensflare3.png');
+const textureFlare0 = textureLoader.load('../lensflare0.png');
+const textureFlare3 = textureLoader.load('../lensflare3.png');
 
 const light = new THREE.PointLight(0xffffff, 1.5, 2000);
 light.color.setHSL(0.995, 0.5, 0.7);
@@ -92,7 +91,7 @@ scene.add(light3);
 
 const faceMesh = new FaceMesh({
   locateFile: (file) => {
-    return `./node_modules/@mediapipe/face_mesh/${file}`;
+    return `../node_modules/@mediapipe/face_mesh/${file}`;
   }
 });
 

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
-import Stats from './node_modules/three/examples/jsm/libs/stats.module.js';
-import { GUI } from './node_modules/three/examples/jsm/libs/lil-gui.module.min.js';
-import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import Stats from 'three/examples/jsm/libs/stats.module';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 let scene, renderer, camera, stats;
 let model, skeleton, mixer, clock;
