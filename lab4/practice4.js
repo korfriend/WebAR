@@ -2,11 +2,11 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
-import * as THREE from 'three/build/three.module';
-import * as Kalidokit from 'kalidokit/dist/kalidokit.es'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as THREE from 'three';
+import * as Kalidokit from '../node_modules/kalidokit/dist/kalidokit.es.js'
+import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { TRIANGULATION } from '../triangulation.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 const render_w = 640;
@@ -54,7 +54,7 @@ scene.add( ground_mesh );
 
 let model, skeleton, skeleton_helper, mixer, numAnimations;
 const loader = new GLTFLoader();
-loader.load( './models/gltf/Xbot.glb', function ( gltf ) {
+loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
 
     model = gltf.scene;
     scene.add( model );
