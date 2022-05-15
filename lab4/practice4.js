@@ -7,6 +7,7 @@ import * as Kalidokit from '../node_modules/kalidokit/dist/kalidokit.es.js'
 import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { TRIANGULATION } from '../triangulation.js';
 import { GLTFLoader } from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import { CalculateJointAngles } from './calculate_joint_angles.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 const render_w = 640;
@@ -67,7 +68,14 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
         if ( object.isMesh ) object.castShadow = true;
 
         //console.log(object.isBone);
-        if ( object.isBone ) bones.push(object);
+        if ( object.isBone ) {
+          let axis_helper = new THREE.AxesHelper(20);
+          // https://stackoverflow.com/questions/13309289/three-js-geometry-on-top-of-another
+          axis_helper.material.depthTest = false;
+          bones.push(object);
+          //console.log(object);
+          object.add(axis_helper);
+        }
     } );
 
     bones.forEach(function(bone){
@@ -92,7 +100,7 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
         let clip = animations[ i ];
         const name = clip.name;
 
-        console.log("action: " + name);
+        //console.log("action: " + name);
     }
 } );
 
@@ -109,7 +117,9 @@ function onResults2(results) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-
+  
+  let test = CalculateJointAngles.convert2dictionary(results.poseLandmarks);
+  //console.log(test);
   //results.poseLandmarks
   {
     // Only overwrite existing pixels.
@@ -121,7 +131,10 @@ function onResults2(results) {
     canvasCtx.globalCompositeOperation = 'destination-atop';
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-    //console.log(results.ea);
+    //console.log(results.poseLandmarks);
+
+    
+
     canvasCtx.globalCompositeOperation = 'source-over';
     drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
                   {color: '#00FF00', lineWidth: 2});
@@ -138,13 +151,48 @@ function onResults2(results) {
   //});
   let poselm3d = results.poseLandmarks;
   let poseRig = Kalidokit.Pose.solve(poselm3d,results.poseLandmarks,{runtime:'mediapipe',imageSize:{width:820, height:462}})
+  //console.log(poseRig.LeftUpperLeg);
+  //console.log(poseRig.LeftLowerLeg);
   //console.log(poseRig);
-    
+  let hips = skeleton.getBoneByName("mixamorigHips");
+  let mixamor_leftUpLeg = skeleton.getBoneByName("mixamorigLeftUpLeg");
+  let matT_leftUpLeg = new THREE.Matrix4().makeTranslation(mixamor_leftUpLeg.position.x, mixamor_leftUpLeg.position.y, mixamor_leftUpLeg.position.z);
+  let mixamor_leftLeg = skeleton.getBoneByName("mixamorigLeftLeg");
+  let matT_leftLeg = new THREE.Matrix4().makeTranslation(mixamor_leftLeg.position.x, mixamor_leftLeg.position.y, mixamor_leftLeg.position.z);
+  let mixamor_rightUpLeg = skeleton.getBoneByName("mixamorigRightUpLeg");
+  let matT_rightUpLeg = new THREE.Matrix4().makeTranslation(mixamor_rightUpLeg.position.x, mixamor_rightUpLeg.position.y, mixamor_rightUpLeg.position.z);
+  let mixamor_rightLeg = skeleton.getBoneByName("mixamorigRightLeg");
+  let matT_rightLeg = new THREE.Matrix4().makeTranslation(mixamor_rightLeg.position.x, mixamor_rightLeg.position.y, mixamor_rightLeg.position.z);
+  //let euler_0 = new THREE.Matrix4().makeRotationX(poseRig.Hips.rotation.x)
+  //new THREE.Euler( poseRig.Hips.rotation.x, poseRig.Hips.rotation.y, poseRig.Hips.rotation.z, 'XYZ' );
+  let sv_euler_leftupleg = new THREE.Euler( poseRig.LeftUpperLeg.y, poseRig.LeftUpperLeg.x, poseRig.LeftUpperLeg.z, poseRig.LeftUpperLeg.rotationOrder ); // poseRig.LeftUpperLeg.rotationOrder
+  let sv_euler_leftleg = new THREE.Euler( poseRig.LeftLowerLeg.y, poseRig.LeftLowerLeg.x, poseRig.LeftLowerLeg.z, poseRig.LeftLowerLeg.rotationOrder ); // poseRig.LeftLowerLeg.rotationOrder
+  let sv_euler_rightupleg = new THREE.Euler( poseRig.RightUpperLeg.y, poseRig.RightUpperLeg.x, poseRig.RightUpperLeg.z, poseRig.RightUpperLeg.rotationOrder ); // poseRig.LeftUpperLeg.rotationOrder
+  let sv_euler_rightleg = new THREE.Euler( poseRig.RightLowerLeg.y, poseRig.RightLowerLeg.x, poseRig.RightLowerLeg.z, poseRig.RightLowerLeg.rotationOrder ); // poseRig.LeftLowerLeg.rotationOrder
+  //console.log(poseRig.LeftUpperLeg);
+  //console.log(poseRig.RightLowerLeg);
+  //let mat_rot_0 = new THREE.Matrix4().makeRotationFromEuler(euler_0);
+  let sv_matR_leftupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_leftupleg);
+  let sv_matR_leftleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_leftleg);
+  let sv_matR_rightupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightupleg);
+  let sv_matR_rightleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightleg);
 
-  let bn_test = skeleton.getBoneByName("mixamorigHips");
+  //let hips_yaw = new THREE.Matrix4().makeRotationZ(poseRig.Hips.rotation.z);
+  //let hips_pitch = new THREE.Matrix4().makeRotationY(poseRig.Hips.rotation.y);
+  //let hips_roll = new THREE.Matrix4().makeRotationX(poseRig.Hips.rotation.x);
+  //console.log(poseRig.Hips);
+  //let mat_rot_0 = new THREE.Matrix4().multiplyMatrices(new THREE.Matrix4().multiplyMatrices(hips_roll, hips_pitch), hips_yaw);
+
+  //hips.matrix.multiplyMatrices(mat_tln_0, mat_rot_0);
+  mixamor_leftUpLeg.matrix.multiplyMatrices(matT_leftUpLeg, sv_matR_leftupleg);
+  mixamor_leftLeg.matrix.multiplyMatrices(matT_leftLeg, sv_matR_leftleg);
+  mixamor_rightUpLeg.matrix.multiplyMatrices(matT_rightUpLeg, sv_matR_rightupleg);
+  mixamor_rightLeg.matrix.multiplyMatrices(matT_rightLeg, sv_matR_rightleg);
+    
   //console.log(bn_test.matrix);
   //bn_test.matrix = new THREE.Matrix4();
 
+  //videoElement.pause();
   renderer.render( scene, camera_ar );
   canvasCtx.restore();
 }
