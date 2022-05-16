@@ -81,6 +81,7 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
     bones.forEach(function(bone){
         console.log(bone.name);
         bone.matrixAutoUpdate = false;
+        bone.matrix = new THREE.Matrix4().makeTranslation(bone.position.x, bone.position.y, bone.position.z);
     });
 
     skeleton = new THREE.Skeleton(bones);
@@ -159,23 +160,27 @@ function onResults2(results) {
   let matT_leftUpLeg = new THREE.Matrix4().makeTranslation(mixamor_leftUpLeg.position.x, mixamor_leftUpLeg.position.y, mixamor_leftUpLeg.position.z);
   let mixamor_leftLeg = skeleton.getBoneByName("mixamorigLeftLeg");
   let matT_leftLeg = new THREE.Matrix4().makeTranslation(mixamor_leftLeg.position.x, mixamor_leftLeg.position.y, mixamor_leftLeg.position.z);
-  let mixamor_rightUpLeg = skeleton.getBoneByName("mixamorigRightUpLeg");
-  let matT_rightUpLeg = new THREE.Matrix4().makeTranslation(mixamor_rightUpLeg.position.x, mixamor_rightUpLeg.position.y, mixamor_rightUpLeg.position.z);
-  let mixamor_rightLeg = skeleton.getBoneByName("mixamorigRightLeg");
-  let matT_rightLeg = new THREE.Matrix4().makeTranslation(mixamor_rightLeg.position.x, mixamor_rightLeg.position.y, mixamor_rightLeg.position.z);
+  // let mixamor_rightUpLeg = skeleton.getBoneByName("mixamorigRightUpLeg");
+  // let matT_rightUpLeg = new THREE.Matrix4().makeTranslation(mixamor_rightUpLeg.position.x, mixamor_rightUpLeg.position.y, mixamor_rightUpLeg.position.z);
+  // let mixamor_rightLeg = skeleton.getBoneByName("mixamorigRightLeg");
+  // let matT_rightLeg = new THREE.Matrix4().makeTranslation(mixamor_rightLeg.position.x, mixamor_rightLeg.position.y, mixamor_rightLeg.position.z);
   //let euler_0 = new THREE.Matrix4().makeRotationX(poseRig.Hips.rotation.x)
   //new THREE.Euler( poseRig.Hips.rotation.x, poseRig.Hips.rotation.y, poseRig.Hips.rotation.z, 'XYZ' );
-  let sv_euler_leftupleg = new THREE.Euler( poseRig.LeftUpperLeg.y, poseRig.LeftUpperLeg.x, poseRig.LeftUpperLeg.z, poseRig.LeftUpperLeg.rotationOrder ); // poseRig.LeftUpperLeg.rotationOrder
-  let sv_euler_leftleg = new THREE.Euler( poseRig.LeftLowerLeg.y, poseRig.LeftLowerLeg.x, poseRig.LeftLowerLeg.z, poseRig.LeftLowerLeg.rotationOrder ); // poseRig.LeftLowerLeg.rotationOrder
-  let sv_euler_rightupleg = new THREE.Euler( poseRig.RightUpperLeg.y, poseRig.RightUpperLeg.x, poseRig.RightUpperLeg.z, poseRig.RightUpperLeg.rotationOrder ); // poseRig.LeftUpperLeg.rotationOrder
-  let sv_euler_rightleg = new THREE.Euler( poseRig.RightLowerLeg.y, poseRig.RightLowerLeg.x, poseRig.RightLowerLeg.z, poseRig.RightLowerLeg.rotationOrder ); // poseRig.LeftLowerLeg.rotationOrder
+  let sv_euler_leftupleg = new THREE.Euler( poseRig.LeftUpperLeg.x, poseRig.LeftUpperLeg.y, poseRig.LeftUpperLeg.z, poseRig.LeftUpperLeg.rotationOrder ); // poseRig.LeftUpperLeg.rotationOrder
+  let sv_euler_leftleg = new THREE.Euler( poseRig.LeftLowerLeg.x, poseRig.LeftLowerLeg.y, poseRig.LeftLowerLeg.z, poseRig.LeftLowerLeg.rotationOrder ); // poseRig.LeftLowerLeg.rotationOrder
+  let sv_euler_rightupleg = new THREE.Euler( poseRig.RightUpperLeg.x, poseRig.RightUpperLeg.y, poseRig.RightUpperLeg.z, poseRig.RightUpperLeg.rotationOrder ); // poseRig.LeftUpperLeg.rotationOrder
+  let sv_euler_rightleg = new THREE.Euler( poseRig.RightLowerLeg.x, poseRig.RightLowerLeg.y, poseRig.RightLowerLeg.z, poseRig.RightLowerLeg.rotationOrder ); // poseRig.LeftLowerLeg.rotationOrder
   //console.log(poseRig.LeftUpperLeg);
   //console.log(poseRig.RightLowerLeg);
   //let mat_rot_0 = new THREE.Matrix4().makeRotationFromEuler(euler_0);
   let sv_matR_leftupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_leftupleg);
   let sv_matR_leftleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_leftleg);
-  let sv_matR_rightupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightupleg);
-  let sv_matR_rightleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightleg);
+  //let sv_matR_rightupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightupleg);
+  //let sv_matR_rightleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightleg);
+  // let sv_matR_leftupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_leftupleg);
+  // let sv_matR_leftleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_leftleg);
+  // let sv_matR_rightupleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightupleg);
+  // let sv_matR_rightleg = new THREE.Matrix4().makeRotationFromEuler(sv_euler_rightleg);
 
   //let hips_yaw = new THREE.Matrix4().makeRotationZ(poseRig.Hips.rotation.z);
   //let hips_pitch = new THREE.Matrix4().makeRotationY(poseRig.Hips.rotation.y);
@@ -184,10 +189,10 @@ function onResults2(results) {
   //let mat_rot_0 = new THREE.Matrix4().multiplyMatrices(new THREE.Matrix4().multiplyMatrices(hips_roll, hips_pitch), hips_yaw);
 
   //hips.matrix.multiplyMatrices(mat_tln_0, mat_rot_0);
-  mixamor_leftUpLeg.matrix.multiplyMatrices(matT_leftUpLeg, sv_matR_leftupleg);
-  mixamor_leftLeg.matrix.multiplyMatrices(matT_leftLeg, sv_matR_leftleg);
-  mixamor_rightUpLeg.matrix.multiplyMatrices(matT_rightUpLeg, sv_matR_rightupleg);
-  mixamor_rightLeg.matrix.multiplyMatrices(matT_rightLeg, sv_matR_rightleg);
+  mixamor_leftUpLeg.matrix.multiplyMatrices(sv_matR_leftupleg, matT_leftUpLeg);
+  mixamor_leftLeg.matrix.multiplyMatrices(sv_matR_leftleg, matT_leftLeg);
+  // mixamor_rightUpLeg.matrix.multiplyMatrices(sv_matR_rightupleg, matT_rightUpLeg);
+  // mixamor_rightLeg.matrix.multiplyMatrices(sv_matR_rightleg, matT_rightLeg);
     
   //console.log(bn_test.matrix);
   //bn_test.matrix = new THREE.Matrix4();
