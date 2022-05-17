@@ -7,6 +7,7 @@
     "@mediapipe/control_utils": "^0.6.1629159505",
     "@mediapipe/drawing_utils": "^0.3.1620248257",
     "@mediapipe/face_mesh": "^0.4.1633559619",
+    "@mediapipe/holistic": "^0.5.1635989137",
     "@mediapipe/pose": "^0.5.1635988162",
     "device-detector-js": "^3.0.2",
     "kalidokit": "^1.1.5",
