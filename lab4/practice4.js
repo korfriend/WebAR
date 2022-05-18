@@ -75,9 +75,21 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
           axis_helper.material.depthTest = false;
           bones.push(object);
           //console.log(object);
-          //object.add(axis_helper);
+          if(object.name == "mixamorigLeftLeg" || object.name == "mixamorigLeftUpLeg") 
+            object.add(axis_helper);
+
+          if(object.name == "mixamorigLeftUpLeg")
+            console.log(object.position);
         }
     } );
+
+    //let test_obj = new THREE.Object3D();
+    //test_obj.position.set(0, 1, 0);
+    //scene.add(test_obj);
+    //let axis_helper__TEST = new THREE.AxesHelper(2);
+    //let axis_helper__TEST1 = new THREE.AxesHelper(400);
+    //test_obj.add(axis_helper__TEST);
+    //scene.add(axis_helper__TEST1);
 
     bones.forEach(function(bone){
         console.log(bone.name);
@@ -89,7 +101,7 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
     skeleton = new THREE.Skeleton(bones);
 
     skeleton_helper = new THREE.SkeletonHelper( model );
-    skeleton_helper.visible = true;
+    skeleton_helper.visible = false;
     
     scene.add( skeleton_helper );
 
@@ -216,19 +228,19 @@ function onResults2(results) {
     0.9
   );
   
-  rigRotation("mixamorigSpine", poseRig.Spine, 1, .8);
-  rigRotation("mixamorigSpine1", poseRig.Spine, 1, .8);
-  rigRotation("mixamorigSpine2", poseRig.Spine, 1, .8);
+  // rigRotation("mixamorigSpine", poseRig.Spine, 1, .8);
+  // rigRotation("mixamorigSpine1", poseRig.Spine, 1, .8);
+  // rigRotation("mixamorigSpine2", poseRig.Spine, 1, .8);
 
-  rigRotation("mixamorigLeftUpLeg", poseRig.LeftUpperLeg, 1, .8);
-  rigRotation("mixamorigLeftLeg", poseRig.LeftLowerLeg, 1, .8);
-  rigRotation("mixamorigRightUpLeg", poseRig.RightUpperLeg, 1, .8);
-  rigRotation("mixamorigRightLeg", poseRig.RightLowerLeg, 1, .8);
+  rigRotation("mixamorigLeftLeg", poseRig.LeftUpperLeg, 1, .8);
+  //rigRotation("mixamorigLeftLeg", poseRig.LeftLowerLeg, 1, .8);
+  // rigRotation("mixamorigRightUpLeg", poseRig.RightUpperLeg, 1, .8);
+  // rigRotation("mixamorigRightLeg", poseRig.RightLowerLeg, 1, .8);
 
-  rigRotation("mixamorigRightArm", poseRig.RightUpperArm, 1, .8);
-  rigRotation("mixamorigRightForeArm", poseRig.RightLowerArm, 1, .8);
-  rigRotation("mixamorigLeftArm", poseRig.LeftUpperArm, 1, .8);
-  rigRotation("mixamorigLeftForeArm", poseRig.LeftLowerArm, 1, .8);
+  // rigRotation("mixamorigRightArm", poseRig.RightUpperArm, 1, .8);
+  // rigRotation("mixamorigRightForeArm", poseRig.RightLowerArm, 1, .8);
+  // rigRotation("mixamorigLeftArm", poseRig.LeftUpperArm, 1, .8);
+  // rigRotation("mixamorigLeftForeArm", poseRig.LeftLowerArm, 1, .8);
 
   //console.log(poseRig.LeftUpperLeg);
   //console.log(poseRig.LeftLowerLeg);
