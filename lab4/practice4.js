@@ -75,10 +75,10 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
           axis_helper.material.depthTest = false;
           bones.push(object);
           //console.log(object);
-          if(object.name == "mixamorigLeftLeg" || object.name == "mixamorigLeftUpLeg") 
+          if(object.name == "mixamorigLeftLeg" || object.name == "mixamorigLeftUpLeg" || object.name == "mixamorigHips") 
             object.add(axis_helper);
 
-          if(object.name == "mixamorigLeftUpLeg")
+          if(object.name == "mixamorigLeftUpLeg" || object.name == "mixamorigHips")
             console.log(object.position);
         }
     } );
@@ -167,7 +167,7 @@ function onResults2(results) {
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
   
-  let test = CalculateJointAngles.convert2dictionary(results.poseLandmarks);
+  //let test = CalculateJointAngles.convert2dictionary(results.poseLandmarks);
   //console.log(test);
   //results.poseLandmarks
   {
@@ -232,8 +232,8 @@ function onResults2(results) {
   // rigRotation("mixamorigSpine1", poseRig.Spine, 1, .8);
   // rigRotation("mixamorigSpine2", poseRig.Spine, 1, .8);
 
-  rigRotation("mixamorigLeftLeg", poseRig.LeftUpperLeg, 1, .8);
-  //rigRotation("mixamorigLeftLeg", poseRig.LeftLowerLeg, 1, .8);
+  rigRotation("mixamorigLeftUpLeg", poseRig.LeftUpperLeg, 1, .8);
+  rigRotation("mixamorigLeftLeg", poseRig.LeftLowerLeg, 1, .8);
   // rigRotation("mixamorigRightUpLeg", poseRig.RightUpperLeg, 1, .8);
   // rigRotation("mixamorigRightLeg", poseRig.RightLowerLeg, 1, .8);
 
