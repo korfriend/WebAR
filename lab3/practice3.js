@@ -214,11 +214,6 @@ function ProjScale(p_ms, cam_pos, src_d, dst_d) {
     return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
 }
 
-function ProjScale2(p_ms, cam_pos, src_d, dst_d) {
-    let vec_cam2p = new THREE.Vector3().subVectors(p_ms, cam_pos);
-    return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
-}
-
 var evCache = new Array();
 var prevDiff = -1;
 function remove_event(ev) {
