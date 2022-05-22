@@ -122,7 +122,9 @@ class ThreeMpPose {
         const R_hips = this.computeR_hips();
         const hip_root = skeleton.getBoneByName("mixamorigHips");
         const hip_joint = this.pose3dDict["hips"];
-        //console.log(hip_root.parent.scale);
+        //console.log(hip_root.parent.position);
+        //console.log(hip_root.position);
+        hip_root.position.set(0, 0, 0);
         //const character_scale = hip_root.parent.scale;
         //hip_root.position.set(hip_joint.x / character_scale.x, hip_joint.y / character_scale.x, hip_joint.z / character_scale.x);
         hip_root.quaternion.slerp(new Quaternion().setFromRotationMatrix(R_hips), 0.9); 

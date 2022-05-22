@@ -5,6 +5,7 @@ const canvasCtx = canvasElement.getContext('2d');
 import * as THREE from 'three';
 import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import { GUI } from '../node_modules/three/examples/jsm/libs/lil-gui.module.min.js';
 import { ThreeMpPose } from './calculate_joint_angles.js';
 //import '../node_modules/@mediapipe/holistic/holistic.js';
 import '../node_modules/@mediapipe/camera_utils/camera_utils.js';
@@ -74,10 +75,12 @@ axis_helper_root.position.set(0, 0.001, 0);
 scene.add( axis_helper_root );
 
 let model, skeleton, skeleton_helper, mixer, numAnimations;
+let axis_helpers = [];
 const loader = new GLTFLoader();
 loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
 
     model = gltf.scene;
+    //model.position.set(0, 1, 1);
     scene.add( model );
 
     console.log(model);
@@ -97,6 +100,10 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
             //axis_helper.material.depthTest = false;
             //object.add(new THREE.AxesHelper(20));
           //} 
+          //let axis_helper = new THREE.AxesHelper(20);
+          //axis_helper.material.depthTest = false;
+          //object.add(axis_helper);
+          //axis_helpers.push(axis_helper);
         }
     } );
 
@@ -172,8 +179,6 @@ function onResults2(results) {
     threeMpPose.add3dJointsForMixamo();
     threeMpPose.rigSolverForMixamo(skeleton);
 
-    model.position.copy(threeMpPose.pose3dDict["hips"]);
-
     let i = 0;
     //console.log(threeMpPose.pose3dDict);
     for (const [key, value] of Object.entries(threeMpPose.pose3dDict)) {
@@ -193,6 +198,10 @@ function onResults2(results) {
       i++;
     }
     test_new_points.geometry.attributes.position.needsUpdate = true;
+    
+    model.position.copy(new THREE.Vector3().addVectors(threeMpPose.pose3dDict["hips"], new THREE.Vector3(1, 0, -1)));
+    test_points.position.set(-1, 0, -1);
+    test_new_points.position.set(-1, 0, -1);
   }
 
   renderer.render( scene, camera_ar );
@@ -226,3 +235,39 @@ async function detectionFrame() {
 }
 
 detectionFrame();
+
+function createPanel() {
+
+  const panel = new GUI( { width: 310 } );
+
+  let settings = {
+    'show skeleton': false,
+    //'pause/continue': pauseContinue,
+    //'show local axes': false,
+    'show bone axes': 'bone name <Enter>'
+  };
+
+  panel.add( settings, 'show skeleton' ).onChange( function(visibility){ skeleton_helper.visible = visibility; } );
+  //panel.add( settings, 'show local axes' ).onChange( function(visibility){} );
+  let gui_text = panel.add( settings, 'show bone axes' ).onFinishChange(function (boneName) {
+    const _bone = skeleton.getBoneByName(boneName);
+    if(_bone) {
+      if(_bone.axisHelper == null) {
+        let axis_helper = new THREE.AxesHelper(20);
+        axis_helper.material.depthTest = false;
+        _bone.add(axis_helper);
+        _bone.axisHelper = axis_helper;
+      }
+      else {
+        _bone.remove(_bone.axisHelper);
+        _bone.axisHelper = null;
+      }
+    }
+    //console.log(settings['show bone axes']);
+    settings['show bone axes'] = 'bone name <Enter>';
+    gui_text.updateDisplay();
+  });
+  panel.open();
+}
+
+createPanel();
