@@ -1,8 +1,8 @@
 module.exports = {
     mode: 'production', // or "development" or "none"
-    entry: './sample2.js',
+    entry: './lab4/practice4.js',
     output: {
-        filename: './bundle.js',
+        filename: './bundle2.js',
     },
     experiments: {
         topLevelAwait: true,
