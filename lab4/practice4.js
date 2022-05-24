@@ -77,7 +77,8 @@ scene.add( axis_helper_root );
 let model, skeleton, skeleton_helper, mixer, numAnimations;
 let axis_helpers = [];
 const loader = new GLTFLoader();
-loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
+//loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
+loader.load( './Xbot.glb', function ( gltf ) {
 
     model = gltf.scene;
     //model.position.set(0, 1, 1);
