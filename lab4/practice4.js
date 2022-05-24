@@ -74,7 +74,7 @@ let axis_helper_root = new THREE.AxesHelper(1);
 axis_helper_root.position.set(0, 0.001, 0);
 scene.add( axis_helper_root );
 
-let model, skeleton, skeleton_helper, mixer, numAnimations;
+let model, skeleton = null, skeleton_helper, mixer, numAnimations;
 let axis_helpers = [];
 const loader = new GLTFLoader();
 //loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
@@ -174,6 +174,7 @@ function onResults2(results) {
                   {color: '#FF0000', radius: 1});
     canvasCtx.restore();
   }
+  if (skeleton != null)
   {
     threeMpPose.updateMpLandmarks(results.poseLandmarks);
     threeMpPose.transformToWorld(camera_world, 1.5, new THREE.Vector3(0, 0, 1.5));
