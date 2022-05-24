@@ -202,12 +202,13 @@ function onResults2(results) {
     test_new_points.geometry.attributes.position.needsUpdate = true;
 
     let pos_hip = skeleton.getBoneByName("mixamorigHips").localToWorld (new THREE.Vector3(0, 0, 0));
-    let pos_bottom = skeleton.getBoneByName("mixamorigRightFoot").localToWorld (new THREE.Vector3(0, 0, 0));
+    let pos_bottom0 = skeleton.getBoneByName("mixamorigRightFoot").localToWorld (new THREE.Vector3(0, 0, 0));
+    let pos_bottom1 = skeleton.getBoneByName("mixamorigLeftFoot").localToWorld (new THREE.Vector3(0, 0, 0));
     //console.log(pos_bottom);
     
     let pos_hip_mp = threeMpPose.pose3dDict["hips"];
     model.position.copy(new THREE.Vector3().addVectors(pos_hip_mp, new THREE.Vector3(1, 0, -1)));
-    model.position.y = pos_hip.y-pos_bottom.y;
+    model.position.y = pos_hip.y-Math.min(pos_bottom0.y, pos_bottom1.y);
     test_points.position.set(-1, 0, -1);
     test_new_points.position.set(-1, 0, -1);
   }
