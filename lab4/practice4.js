@@ -14,8 +14,8 @@ import '../node_modules/@mediapipe/drawing_utils/drawing_utils.js';
 import '../node_modules/@mediapipe/pose/pose.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-const render_w = 820;
-const render_h = 462;
+const render_w = videoElement.videoWidth;
+const render_h = videoElement.videoHeight;
 renderer.setSize( render_w, render_h );
 renderer.setViewport(0, 0, render_w, render_h);
 renderer.shadowMap.enabled = true;
