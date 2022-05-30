@@ -94,9 +94,9 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
           }
       } );
   
-      //bones.forEach(function(bone){
-      //    console.log(bone.name);
-      //});
+      bones.forEach(function(bone){
+          console.log(bone.name);
+      });
   
       skeleton = new THREE.Skeleton(bones);
   
@@ -246,6 +246,27 @@ function onResults2(results) {
         i++;
       }
       test_points.geometry.attributes.position.needsUpdate = true;
+
+      // rigging //
+      //mixamorigLeftArm : left_shoulder
+      //mixamorigLeftForeArm : left_elbow
+      //mixamorigLeftHand : left_wrist
+      let jointLeftShoulder = pos_3d_landmarks["left_shoulder"]; // p0
+      let jointLeftElbow = pos_3d_landmarks["left_elbow"]; // p1
+      let boneLeftArm = skeleton.getBoneByName("mixamorigLeftArm"); // j1
+      let v01 = new THREE.Vector3().subVectors(jointLeftElbow, jointLeftShoulder).normalize();
+      let j1 = boneLeftArm.position.clone().normalize();
+      let R0 = computeR(j1, v01);
+      boneLeftArm.setRotationFromMatrix(R0);
+      
+      let jointLeftWrist = pos_3d_landmarks["left_wrist"]; // p2
+      let boneLeftForeArm = skeleton.getBoneByName("mixamorigLeftForeArm"); // j2
+      let v12 = new THREE.Vector3().subVectors(jointLeftWrist, jointLeftElbow).normalize();
+      let j2 = boneLeftForeArm.position.clone().normalize();
+      let Rv12 = v12.clone().applyMatrix4(R0.clone().transpose());
+      let R1 = computeR(j2, Rv12);
+      boneLeftForeArm.setRotationFromMatrix(R1);
+      //console.log(boneLeftArm);
     }
 
     
