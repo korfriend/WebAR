@@ -10,6 +10,7 @@ import '../node_modules/@mediapipe/pose/pose.js';
 import * as THREE from 'three';
 import { OrbitControls } from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import { CCDIKSolver } from "../node_modules/three/examples/jsm/animation/CCDIKSolver.js";
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 const render_w = videoElement.videoWidth;
@@ -68,6 +69,8 @@ ground_mesh.add( grid_helper );
 let model, skeleton = null, skeleton_helper, mixer, numAnimations;
 let axis_helpers = [];
 const loader = new GLTFLoader();
+let ikSolver;
+let boneIK_target = new THREE.Bone();
 loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
       model = gltf.scene;
       scene.add( model );
@@ -93,12 +96,18 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
             //axis_helpers.push(axis_helper);
           }
       } );
+
+      console.log(model);
   
-      bones.forEach(function(bone){
-          console.log(bone.name);
+      //skeleton = new THREE.Skeleton(bones);
+      let armature = model.children[0];
+      let skinnedMesh = armature.children[1];
+      skeleton = skinnedMesh.skeleton;//new THREE.Skeleton(bones);
+      
+      let index = 0;
+      skeleton.bones.forEach(function(bone){
+        console.log(index++, bone.name);
       });
-  
-      skeleton = new THREE.Skeleton(bones);
   
       skeleton_helper = new THREE.SkeletonHelper( model );
       skeleton_helper.visible = true;
@@ -112,7 +121,33 @@ loader.load( '../models/gltf/Xbot.glb', function ( gltf ) {
   
       //console.log(model.position);
       //console.log(model.scale);
+      
+      let boneEffector = skeleton.getBoneByName("mixamorigRightHand");
+
+      let ik_bones = skeleton.bones.slice();
+      ik_bones.push(boneIK_target);
+      boneEffector.add(boneIK_target);
+      // .getWorldPosition
+      
+      // dummy
+      let ik_skeleton = new THREE.Skeleton(ik_bones);
+      let ik_mesh = new THREE.SkinnedMesh( skinnedMesh.geometry,	skinnedMesh.material );
+      ik_mesh.bind(ik_skeleton);
+      //console.log(armature.children[1]);
+
+      const iks = [
+        {
+          target: 37,
+          effector: 36,
+          links: [{ index: 35 }, { index: 34 }, { index: 33 }]
+          // iteration: 15
+          // minAngle: 0,
+          // maxAngle: 1
+        }
+      ];
+      ikSolver = new CCDIKSolver(ik_mesh, iks);
   } );
+
 
 
 let name_to_index = {
@@ -266,8 +301,19 @@ function onResults2(results) {
       let Rv12 = v12.clone().applyMatrix4(R0.clone().transpose());
       let R1 = computeR(j2, Rv12);
       skeleton.getBoneByName("mixamorigLeftForeArm").setRotationFromMatrix(R1);
-      //console.log(boneLeftArm);
+      
+
+      let jointRightIndex = pos_3d_landmarks["right_index"]; // p0
+      let jointRightWrist = pos_3d_landmarks["right_wrist"]; // p1
+      let boneRightHandIndex1 = skeleton.getBoneByName("mixamorigRightHandIndex1"); // j1
+      let v01r = new THREE.Vector3().subVectors(jointRightIndex, jointRightWrist).normalize();
+      let j1r = boneRightHandIndex1.position.clone().normalize();
+      let R0r = computeR(j1r, v01r);
+      skeleton.getBoneByName("mixamorigRightHand").setRotationFromMatrix(R0r);
+
     }
+    boneIK_target.position.set(-10000, 0, 0);
+    ikSolver?.update();
 
     
     renderer.render( scene, camera_ar );

@@ -414,14 +414,18 @@ function onResults(results) {
         let p_center = new THREE.Vector3(0, 0, 0);
         for(let i = 0; i < landmarks.length; i++) {
             let p = landmarks[i];
-            //let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, p.z).unproject(camera_ar);
+            
+            // weak perspective!!
+            let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, p.z).unproject(camera_ar);
+            p_ms = ProjScale(p_ms, camera_ar.position, center_dist, 100.0);
+
+            
             // here, z should be recomputed!
-            let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, -1).unproject(camera_ar);
-            p_ms.z = -p.z * x_scale + camera_ar.position.z - camera_ar.near;
-            //p_ms = ProjScale(p_ms, camera_ar.position, center_dist, 100.0);
+            //let p_ms = new THREE.Vector3((p.x - 0.5) * 2.0, -(p.y - 0.5) * 2.0, -1).unproject(camera_ar);
+            //p_ms.z = -p.z * x_scale + camera_ar.position.z - camera_ar.near;
             // camera_ar.near
-            p_ms = ProjScale(p_ms, camera_ar.position, camera_ar.near, 300.0);
-            //p_ms.z = -p.z * x_scale;
+            //p_ms = ProjScale(p_ms, camera_ar.position, camera_ar.near, 300.0);
+
 
             //let vec_cam2p = new THREE.Vector3().subVectors(p_ms, cam_pos);
             //return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
