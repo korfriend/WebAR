@@ -314,7 +314,6 @@ function mouseWheelHandler(e) {
   update_light(pos_light_np);
 }
 
-
 const faceMesh = new FaceMesh({locateFile: (file) => {
     return `../node_modules/@mediapipe/face_mesh/${file}`;
   }});
