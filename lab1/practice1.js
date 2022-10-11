@@ -48,7 +48,6 @@ function modifyText(e) {
     box_mesh.matrix = new THREE.Matrix4().makeTranslation(0, 0, 80).multiply(mat_rot);
   }
 
-
 animate();
 function animate() {
     requestAnimationFrame( animate );
