@@ -64,6 +64,16 @@ const myScene = new THREE.Scene();
 
 myScene.add( myModel );
 
+////////////////////
+const childMesh = new THREE.Mesh(
+    new THREE.SphereGeometry( 5, 16, 8 ),
+    new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true } )
+);
+myScene.add( childMesh );
+myModel.add( childMesh );
+myScene.add( childMesh );
+
+
 //renderer.render( myScene, camera );
 animate();
 function animate() {
