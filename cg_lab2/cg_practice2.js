@@ -1,22 +1,24 @@
 import * as THREE from 'three';
 import {OrbitControls} from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
 
+const render_w = 640;
+const render_h = 480;
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize( 640, 480 );
-renderer.setViewport( 0, 0, 640, 480 );
+renderer.setSize( render_w, render_h );
+renderer.setViewport( 0, 0, render_w, render_h );
         
 const container = document.getElementById( 'myContainer' );
 
 container.appendChild( renderer.domElement );
 
 // camera setting
-const camera = new THREE.PerspectiveCamera( 45, 640.0/480.0, 1, 500 );
+const camera = new THREE.PerspectiveCamera( 45, render_w/render_h, 1, 500 );
 camera.position.set( 0, 0, -100 );
 camera.up.set(0, 1, 0);
 camera.lookAt( 0, 0, 50 );
 
 const controls = new OrbitControls( camera, renderer.domElement );
-controls.enableDamping = true;
+//controls.enableDamping = true;
 
 // geometry setting
 const points = [
@@ -25,12 +27,18 @@ const points = [
     -10, -10, 0,
     10, -10, 0
 ];
+const points2 = [
+    0, 0, 0,
+    10, 0, 0,
+    0, 10, 0,
+    0, 0, 10
+];
 //points.push( new THREE.Vector3( 10, 10, 0 ) );
 //points.push( new THREE.Vector3( -10, 10, 0 ) );
 //points.push( new THREE.Vector3( -10, -10, 0 ) );
 //points.push( new THREE.Vector3( 10, -10, 0 ) );
 
-const pointsArray = new Float32Array(points);
+const pointsArray = new Float32Array(points2);
 
 let planeGeometry = new THREE.BufferGeometry();
 //const geometry = new THREE.BufferGeometry().setFromPoints( points );
@@ -39,18 +47,22 @@ planeGeometry.setAttribute('position', new THREE.BufferAttribute(pointsArray, 3)
 const tris = [
     0, 1, 3,      1, 2, 3
 ];
-planeGeometry.setIndex(tris);
+const tris2 = [
+    3, 0, 1,      2, 0, 3,
+    2, 1, 0,      2, 3, 1,
+];
+planeGeometry.setIndex(tris2);
 
 // material setting
 const material = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide, wireframe: true } );
 
 // mesh model 
-const myRect = new THREE.Mesh( planeGeometry, material );
+const myModel = new THREE.Mesh( planeGeometry, material );
         
 // create my world (scene)
 const myScene = new THREE.Scene();
 
-myScene.add( myRect );
+myScene.add( myModel );
 
 //renderer.render( myScene, camera );
 animate();
@@ -68,11 +80,8 @@ renderer.domElement.onpointercancel = mouseUpHandler;
 renderer.domElement.onpointerout = mouseUpHandler;
 renderer.domElement.onpointerleave = mouseUpHandler;
 
-function compute_pos_ps2ws(x_ss, y_ss) {
-    //console.log(x_ss / window.innerWidth * 2 - 1)
-    return new THREE.Vector3( x_ss / render_w * 2 - 1, 
-        -y_ss / render_h * 2 + 1, -1 ).unproject( camera_ar );
-    //return new THREE.Vector3( x_ss / window.innerWidth, -y_ss / window.innerHeight, -1 ).unproject( controls.object );
+function compute_pos_ss2ws(x_ss, y_ss) {
+    return new THREE.Vector3( x_ss / render_w * 2 - 1, -y_ss / render_h * 2 + 1, -1 ).unproject( camera );
 }
 
 let mouse_btn_flag = false;
@@ -80,17 +89,30 @@ function mouseDownHandler(e) {
   // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
   if(e.pointerType == 'mouse') {
     mouse_btn_flag = true;
+
+    // to do //
+    myModel.position.set(10, 0, 0);
+    myModel.scale.set(2, 2, 2);
+    //myModel.quaternion
+    //myModel.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
+    myModel.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4);
+
+    const matLocal = new THREE.Matrix4();
+    const matT = new THREE.Matrix4().makeTranslation(10, 0, 0);
+    const matS = new THREE.Matrix4().makeScale(2, 2, 2);
+    const matR = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
+    matLocal.premultiply(matT);
+    matLocal.premultiply(matS);
+    //matLocal.premultiply(matR);
+    myModel.matrix = matLocal.clone();
+    myModel.matrixAutoUpdate = false;
+
     mouseMoveHandler(e);
   }
   else if(e.pointerType == 'touch') {
     evCache.push(e);
     console.log("pointerDown", e);
   }
-}
-
-function ProjScale(p_ms, cam_pos, src_d, dst_d) {
-    let vec_cam2p = new THREE.Vector3().subVectors(p_ms, cam_pos);
-    return new THREE.Vector3().addVectors(cam_pos, vec_cam2p.multiplyScalar(dst_d/src_d));
 }
 
 var evCache = new Array();
@@ -104,10 +126,10 @@ function remove_event(ev) {
     }
   }
  }
+
 function mouseUpHandler(e) {
   mouse_btn_flag = false;
-  console.log("GGGGL");
-  console.log(e);
+  console.log("Mouse Up");
   if(e.pointerType != 'touch') return;
   // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttonlog(ev.type, ev);
   // Remove this pointer from the cache and reset the target's
@@ -124,9 +146,11 @@ let y_prev = render_h / 2;
 function mouseMoveHandler(e) {
   if(e.pointerType == 'mouse') {
     if(mouse_btn_flag) {
-      let pos_light_np = compute_pos_ps2ws(e.clientX, e.clientY);
-      //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
-      update_light(pos_light_np);
+      let posNp = compute_pos_ss2ws(e.clientX, e.clientY);
+      // to do //
+      console.log("Mouse Pos:", e.clientX, e.clientY);
+      console.log("Mouse Pos:", posNp);
+
       x_prev = e.clientX;
       y_prev = e.clientY;
     }
@@ -144,9 +168,11 @@ function mouseMoveHandler(e) {
     }
 
     if (evCache.length == 1) {
-      let pos_light_np = compute_pos_ps2ws(e.clientX, e.clientY);
-      //let pos_light = ProjScale(pos_light_np, camera_ar.position, camera_ar.near, light_plane_dist);
-      update_light(pos_light_np);
+      // to do //
+      let posNp = compute_pos_ss2ws(e.clientX, e.clientY);
+      console.log("Mouse Pos:", posNp);
+      
+
       x_prev = e.clientX;
       y_prev = e.clientY;
     }
@@ -160,19 +186,18 @@ function mouseMoveHandler(e) {
         if (curDiff > prevDiff) {
           // The distance between the two pointers has increased
           console.log("Pinch moving OUT -> Zoom in", e);
-          camera_ar.near += 2.0;
-          camera_ar.near = Math.min(camera_ar.near, camera_ar.far);
-          camera_ar.updateProjectionMatrix();
+          camera.near += 2.0;
+          camera.near = Math.min(camera_ar.near, camera_ar.far);
+          camera.updateProjectionMatrix();
         }
         if (curDiff < prevDiff) {
           // The distance between the two pointers has decreased
           console.log("Pinch moving IN -> Zoom out",e);
-          camera_ar.near -= 2.0;
-          camera_ar.near = Math.max(camera_ar.near, 1.0);
-          camera_ar.updateProjectionMatrix();
+          camera.near -= 2.0;
+          camera.near = Math.max(camera_ar.near, 1.0);
+          camera.updateProjectionMatrix();
         }
-        let pos_light_np = compute_pos_ps2ws(x_prev, y_prev);
-        update_light(pos_light_np);
+        
       }
 
       // Cache the distance for the next move event
