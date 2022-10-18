@@ -51,6 +51,16 @@ const myMesh = new THREE.Mesh( geometry, material );
 const myScene = new THREE.Scene();
 
 myScene.add( myMesh );
+
+
+const myMesh2 = new THREE.Mesh(
+  new THREE.SphereGeometry( 5, 16, 8 ),
+  new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true } )
+);
+myMesh.add( myMesh2 );
+
+
+
 animate();
 
 function animate() {
@@ -89,13 +99,14 @@ function mouseDownHandler(e) {
     //myMesh.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
     //myMesh.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4);
 
-    const matLocal = new THREE.Matrix4();
+    let matLocal = new THREE.Matrix4();
     const matT = new THREE.Matrix4().makeTranslation(10, 0, 0);
     const matS = new THREE.Matrix4().makeScale(2, 2, 2);
-    //const matR = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
-    matLocal.premultiply(matT);
-    matLocal.premultiply(matS);
-    //matLocal.premultiply(matR);
+    const matR = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
+    // matLocal := matS * matT
+    matLocal = matT.clone();//.multiply(matT); // matLocal := matLocal * matT
+    //matLocal.multiply(matR); // matLocal := matT * matR
+    matLocal.premultiply(matS); // // matLocal := matS * matT
     myMesh.matrix = matLocal.clone();
     myMesh.matrixAutoUpdate = false;
 
@@ -137,6 +148,20 @@ let x_prev = render_w / 2;
 let y_prev = render_h / 2;
 function mouseMoveHandler(e) {
   if(e.pointerType == 'mouse') {
+
+    console.log("Mouse Pos SS:", e.clientX, e.clientY);
+    //const myPosSS = new THREE.Vector3(e.clientX, e.clientY, -1);
+    const myPosPS = new THREE.Vector3(
+       e.clientX / render_w * 2 - 1, 
+      -e.clientY / render_h * 2 + 1, 
+      -1);
+    
+    const myPosWS = myPosPS.clone();
+    myPosWS.unproject( camera );
+    console.log("Mouse Pos PS:", myPosPS.x, myPosPS.y, myPosPS.z);
+    console.log("Mouse Pos WS:", myPosWS.x, myPosWS.y, myPosWS.z);
+
+
     if(mouse_btn_flag) {
       let posNp = compute_pos_ss2ws(e.clientX, e.clientY);
       // to do //
