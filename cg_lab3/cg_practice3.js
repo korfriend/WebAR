@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import {OrbitControls} from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
-import {VertexNormalsHelper} from "../node_modules/three/examples/jsm/helpers/VertexNormalsHelper.js";
 
 const renderer = new THREE.WebGLRenderer();
 const render_w = 640;
@@ -28,13 +27,13 @@ const points = [
     0, 0, 10,
     0, 0, 0,
 ];
+
 const normals = [
   1, 0, 0,
   1, 0, 0,
   1, 0, 0,
   1, 0, 0,
 ];
-
 
 const triIndices = [
     1, 0, 3,         2, 1, 3,
@@ -51,18 +50,20 @@ geometry.setIndex(triIndices);
 geometry.computeVertexNormals();
 
 // material setting
-const materialOld = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: false } );
-const material = new THREE.MeshPhongMaterial( { color: 0xffff00, wireframe: false, flatShading: false } );
+const material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true } );
+const materialPhong = new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false, flatShading: true } );
 
 // line model 
-const myMesh = new THREE.Mesh( geometry, material );
+const myMesh = new THREE.Mesh( geometry, materialPhong );
 //myMesh.position.set(20, 0, 0);
 //myMesh.matrix = 
 
 // create my world (scene)
 const myScene = new THREE.Scene();
-myScene.background = new THREE.Color( "rgb(150, 150, 200)" );
+myScene.background = new THREE.Color("rgb(255, 0, 0)");
 
+myMesh.castShadow = true;
+myMesh.receiveShadow = true;
 myScene.add( myMesh );
 
 
@@ -70,25 +71,41 @@ const myMesh2 = new THREE.Mesh(
   new THREE.SphereGeometry( 5, 16, 8 ),
   new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false } )
 );
+myMesh2.castShadow = true;
+myMesh2.receiveShadow = true;
 myMesh.add( myMesh2 );
 
+
 const myLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-myLight.position.set(20, 20, 20);
-myLight.target = myMesh2;
+myLight.position.set(30, 30, 30);
+
+myLight.target.position.set( 0, 0, 0 );
+myLight.castShadow = true;
+myLight.shadow.camera.near = 1;
+myLight.shadow.camera.far = 100;
+myLight.shadow.bias = 0.0001;
+myLight.shadow.mapSize.width = 1000;
+myLight.shadow.mapSize.height = 1000;
+
 myScene.add(myLight);
 
+const groundMesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+groundMesh.rotation.x = - Math.PI / 2;
+groundMesh.receiveShadow = true;
+myScene.add( groundMesh );
+
+const groundGrid = new THREE.GridHelper( 2000, 200, 0x000000, 0x000000 );
+groundGrid.material.opacity = 0.2;
+groundGrid.material.transparent = true;
+myScene.add( groundGrid );
+//myScene.fog = new THREE.Fog( 0xa0a0a0, 1, 500 );
+
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.autoClear = false;
+
 const lightHelper = new THREE.DirectionalLightHelper( myLight, 5 );
-myScene.add(lightHelper);
-
-const axesHelper = new THREE.AxesHelper( 50 );
-myScene.add( axesHelper );
-
-const testHelper = new VertexNormalsHelper( myMesh, 3, 0xff0000 );
-myScene.add( testHelper );
-
-axesHelper.visible = false;
-myMesh2.visible = true;
-testHelper.visible = false;
+myScene.add( lightHelper );
 
 animate();
 
@@ -128,13 +145,13 @@ function mouseDownHandler(e) {
     //myMesh.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
     //myMesh.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4);
 
-    let matLocal = new THREE.Matrix4();
-    const matT = new THREE.Matrix4().makeTranslation(10, 0, 0);
-    const matS = new THREE.Matrix4().makeScale(2, 2, 2);
-    const matR = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
-    // matLocal := matS * matT
+    //let matLocal = new THREE.Matrix4();
+    //const matT = new THREE.Matrix4().makeTranslation(10, 0, 0);
+    //const matS = new THREE.Matrix4().makeScale(2, 2, 2);
+    //const matR = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
+    //// matLocal := matS * matT
     //matLocal = matT.clone();//.multiply(matT); // matLocal := matLocal * matT
-    //matLocal.multiply(matR); // matLocal := matT * matR
+    ////matLocal.multiply(matR); // matLocal := matT * matR
     //matLocal.premultiply(matS); // // matLocal := matS * matT
     //myMesh.matrix = matLocal.clone();
     //myMesh.matrixAutoUpdate = false;
