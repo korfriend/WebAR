@@ -7,6 +7,7 @@ const render_w = 640;
 const render_h = 480;
 renderer.setSize( render_w, render_h );
 renderer.setViewport( 0, 0, render_w, render_h );
+renderer.shadowMap.enabled = true;
 
 const container = document.getElementById( 'myContainer' );
 
@@ -52,12 +53,15 @@ geometry.computeVertexNormals();
 
 // material setting
 const materialOld = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: false } );
-const material = new THREE.MeshPhongMaterial( { color: 0xffff00, wireframe: false, flatShading: false } );
+const material = new THREE.MeshPhongMaterial( { color: 0xffff00, wireframe: false, flatShading: false, shininess: 300} );
 
 // line model 
 const myMesh = new THREE.Mesh( geometry, material );
 //myMesh.position.set(20, 0, 0);
 //myMesh.matrix = 
+myMesh.castShadow = true;
+myMesh.receiveShadow = true;
+
 
 // create my world (scene)
 const myScene = new THREE.Scene();
@@ -70,11 +74,26 @@ const myMesh2 = new THREE.Mesh(
   new THREE.SphereGeometry( 5, 16, 8 ),
   new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false } )
 );
+
+//myMesh2.castShadow = true;
+myMesh2.receiveShadow = true;
+
 myMesh.add( myMesh2 );
 
 const myLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 myLight.position.set(20, 20, 20);
 myLight.target = myMesh2;
+
+//myLight.target.position.set( 0, 0, 0 );
+myLight.castShadow = true;
+myLight.shadow.camera.near = 1;
+myLight.shadow.camera.far = 100;
+myLight.shadow.bias = 0.001;
+myLight.shadow.mapSize.width = 1000;
+myLight.shadow.mapSize.height = 1000;
+
+
+
 myScene.add(myLight);
 
 const lightHelper = new THREE.DirectionalLightHelper( myLight, 5 );
