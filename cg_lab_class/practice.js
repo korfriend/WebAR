@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
 import {VertexNormalsHelper} from "../node_modules/three/examples/jsm/helpers/VertexNormalsHelper.js";
+import { ShadowMapViewer } from '../node_modules/three/examples/jsm/utils/ShadowMapViewer.js';
 
 const renderer = new THREE.WebGLRenderer();
 const render_w = 640;
@@ -8,6 +9,7 @@ const render_h = 480;
 renderer.setSize( render_w, render_h );
 renderer.setViewport( 0, 0, render_w, render_h );
 renderer.shadowMap.enabled = true;
+//renderer.shadowMap.type = THREE.BasicShadowMap;
 
 const container = document.getElementById( 'myContainer' );
 
@@ -71,7 +73,7 @@ myScene.add( myMesh );
 
 
 const myMesh2 = new THREE.Mesh(
-  new THREE.SphereGeometry( 5, 16, 8 ),
+  new THREE.SphereGeometry( 5, 32, 16 ),
   new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false } )
 );
 
@@ -81,17 +83,30 @@ myMesh2.receiveShadow = true;
 myMesh.add( myMesh2 );
 
 const myLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-myLight.position.set(20, 20, 20);
+myLight.position.set(50, 50, 50);
 myLight.target = myMesh2;
 
 //myLight.target.position.set( 0, 0, 0 );
 myLight.castShadow = true;
 myLight.shadow.camera.near = 1;
 myLight.shadow.camera.far = 100;
+myLight.shadow.camera.right = 15;
+myLight.shadow.camera.left = - 15;
+myLight.shadow.camera.top	= 15;
+myLight.shadow.camera.bottom = - 15;
 myLight.shadow.bias = 0.001;
-myLight.shadow.mapSize.width = 1000;
-myLight.shadow.mapSize.height = 1000;
+myLight.shadow.mapSize.width = 512;
+myLight.shadow.mapSize.height = 512;
+myLight.name = "myLight";
 
+let dirLightShadowMapViewer = new ShadowMapViewer( myLight );
+const size = window.innerWidth * 0.15;
+dirLightShadowMapViewer.position.x = 10;
+dirLightShadowMapViewer.position.y = 10;
+dirLightShadowMapViewer.size.width = size;
+dirLightShadowMapViewer.size.height = size;
+//dirLightShadowMapViewer.updateForWindowResize();
+dirLightShadowMapViewer.update(); //Required when setting position or size directly
 
 
 myScene.add(myLight);
@@ -116,6 +131,7 @@ function animate() {
     
     controls.update();
     renderer.render( myScene, camera );
+    dirLightShadowMapViewer.render( renderer );
 }
 
 // register event-callback functions into renderer's dom

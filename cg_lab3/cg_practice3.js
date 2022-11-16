@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
+import {VertexNormalsHelper} from "../node_modules/three/examples/jsm/helpers/VertexNormalsHelper.js";
+import { ShadowMapViewer } from '../node_modules/three/examples/jsm/utils/ShadowMapViewer.js';
 
 const renderer = new THREE.WebGLRenderer();
 const render_w = 640;
@@ -51,7 +53,7 @@ geometry.computeVertexNormals();
 
 // material setting
 const material = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: true } );
-const materialPhong = new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false, flatShading: true } );
+const materialPhong = new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false, flatShading: false } );
 
 // line model 
 const myMesh = new THREE.Mesh( geometry, materialPhong );
@@ -83,11 +85,25 @@ myLight.target.position.set( 0, 0, 0 );
 myLight.castShadow = true;
 myLight.shadow.camera.near = 1;
 myLight.shadow.camera.far = 100;
-myLight.shadow.bias = 0.0001;
-myLight.shadow.mapSize.width = 1000;
-myLight.shadow.mapSize.height = 1000;
+myLight.shadow.camera.right = 15;
+myLight.shadow.camera.left = - 15;
+myLight.shadow.camera.top	= 15;
+myLight.shadow.camera.bottom = - 15;
+myLight.shadow.bias = 0.001;
+myLight.shadow.mapSize.width = 512;
+myLight.shadow.mapSize.height = 512;
+myLight.name = "myLight";
 
 myScene.add(myLight);
+
+let dirLightShadowMapViewer = new ShadowMapViewer( myLight );
+const size = window.innerWidth * 0.15;
+dirLightShadowMapViewer.position.x = 10;
+dirLightShadowMapViewer.position.y = 10;
+dirLightShadowMapViewer.size.width = size;
+dirLightShadowMapViewer.size.height = size;
+dirLightShadowMapViewer.updateForWindowResize();
+dirLightShadowMapViewer.update(); //Required when setting position or size directly
 
 const groundMesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
 groundMesh.rotation.x = - Math.PI / 2;
@@ -107,6 +123,9 @@ renderer.autoClear = false;
 const lightHelper = new THREE.DirectionalLightHelper( myLight, 5 );
 myScene.add( lightHelper );
 
+const testHelper = new VertexNormalsHelper( myMesh, 3, 0xff0000 );
+//myScene.add( testHelper );
+
 animate();
 
 function animate() {
@@ -114,6 +133,7 @@ function animate() {
     
     controls.update();
     renderer.render( myScene, camera );
+    dirLightShadowMapViewer.render( renderer );
 }
 
 // register event-callback functions into renderer's dom
