@@ -1,272 +1,283 @@
-import * as THREE from 'three';
-import {OrbitControls} from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
-import {VertexNormalsHelper} from "../node_modules/three/examples/jsm/helpers/VertexNormalsHelper.js";
+import * as THREE from "three";
 
+const container = document.getElementById("myContainer");
+
+// renderer setting
 const renderer = new THREE.WebGLRenderer();
-const render_w = 640;
-const render_h = 480;
-renderer.setSize( render_w, render_h );
-renderer.setViewport( 0, 0, render_w, render_h );
-renderer.shadowMap.enabled = true;
-
-const container = document.getElementById( 'myContainer' );
-
-container.appendChild( renderer.domElement );
-
-// camera setting
-const camera = new THREE.PerspectiveCamera( 45, render_w/render_h, 1, 500 );
-camera.position.set( 0, 0, -100 );
-camera.up.set(0, 1, 0);
-camera.lookAt( 0, 0, 50 );
-
-const controls = new OrbitControls( camera, renderer.domElement );
-
-
-// geometry setting
-const points = [
-    10, 0, 0,
-    0, 10, 0,
-    0, 0, 10,
-    0, 0, 0,
-];
-const normals = [
-  1, 0, 0,
-  1, 0, 0,
-  1, 0, 0,
-  1, 0, 0,
-];
-
-
-const triIndices = [
-    1, 0, 3,         2, 1, 3,
-    3, 0, 2,         1, 2, 0
-]
-
-const geometry = new THREE.BufferGeometry();
-const pointsArray = new Float32Array(points);
-const normalsArray = new Float32Array(normals);
-//geometry.setFromPoints()
-geometry.setAttribute('position', new THREE.BufferAttribute( pointsArray, 3 ));
-//geometry.setAttribute('normal', new THREE.BufferAttribute( normalsArray, 3 ));
-geometry.setIndex(triIndices);
-geometry.computeVertexNormals();
-
-// material setting
-const materialOld = new THREE.MeshBasicMaterial( { color: 0xffff00, wireframe: false } );
-const material = new THREE.MeshPhongMaterial( { color: 0xffff00, wireframe: false, flatShading: false, shininess: 300} );
-
-// line model 
-const myMesh = new THREE.Mesh( geometry, material );
-//myMesh.position.set(20, 0, 0);
-//myMesh.matrix = 
-myMesh.castShadow = true;
-myMesh.receiveShadow = true;
-
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
 
 // create my world (scene)
-const myScene = new THREE.Scene();
-myScene.background = new THREE.Color( "rgb(150, 150, 200)" );
+const scene = new THREE.Scene();
 
-myScene.add( myMesh );
+// camera setting
+const fov = 90;
+const aspect = window.innerWidth / window.innerHeight;
+const near = 1;
+const far = 500;
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+camera.position.set(0, 0, 20);
+camera.up.set(0, 1, 0);
+camera.lookAt(0, 0, 0);
+camera.matrixAutoUpdate = false;
 
+// geometry setting
+const geometry = new THREE.BufferGeometry();
 
-const myMesh2 = new THREE.Mesh(
-  new THREE.SphereGeometry( 5, 16, 8 ),
-  new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false } )
+const indices = [];
+const vertices = [];
+
+vertices.push(-5, 5, -5); // 0
+vertices.push(-5, 5, 5); // 1
+vertices.push(5, 5, 5); // 2
+vertices.push(5, 5, -5); // 3
+vertices.push(-5, -5, -5); // 4
+vertices.push(-5, -5, 5); // 5
+vertices.push(5, -5, 5); // 6
+vertices.push(5, -5, -5); // 7
+
+const uvs = [
+  0, 0, // 0
+  0, 0, // 1
+  1, 0, // 2
+  1, 0, // 3
+  0, 1, // 4
+  0, 1, // 5
+  1, 1, // 6
+  1, 1, // 7
+]
+
+// left
+indices.push(1, 0, 5);
+indices.push(0, 4, 5);
+
+// right
+indices.push(3, 2, 7);
+indices.push(2, 6, 7);
+
+// bottom
+indices.push(4, 7, 5);
+indices.push(7, 6, 5);
+
+// top
+indices.push(1, 2, 0);
+indices.push(2, 3, 0);
+
+// back
+indices.push(0, 3, 4);
+indices.push(3, 7, 4);
+
+// front
+indices.push(2, 1, 6);
+indices.push(1, 5, 6);
+
+geometry.setIndex(indices);
+geometry.setAttribute(
+  "position",
+  new THREE.Float32BufferAttribute(vertices, 3)
 );
 
-//myMesh2.castShadow = true;
-myMesh2.receiveShadow = true;
+geometry.setAttribute(
+  "uv",
+  new THREE.Float32BufferAttribute(uvs, 2)
+);
 
-myMesh.add( myMesh2 );
+geometry.computeVertexNormals();
+
+const myGeo = new THREE.BoxGeometry(10, 10, 10);
+console.log(myGeo.getAttribute('uv'));
+
+const textureLoader = new THREE.TextureLoader();
+const myTex = textureLoader.load('./lab5.jpg');
+
+// material setting
+//const material = new THREE.MeshBasicMaterial({ wireframe: false });
+const material = new THREE.MeshPhongMaterial({ color : 0xffffff, map : myTex });
+
+// cube model
+const cube = new THREE.Mesh(myGeo, material);
+cube.matrixAutoUpdate = false;
+scene.add(cube);
 
 const myLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-myLight.position.set(20, 20, 20);
-myLight.target = myMesh2;
+myLight.position.set(0, 0, 20);
+myLight.target = cube;
+scene.add(myLight);
 
-//myLight.target.position.set( 0, 0, 0 );
-myLight.castShadow = true;
-myLight.shadow.camera.near = 1;
-myLight.shadow.camera.far = 100;
-myLight.shadow.bias = 0.001;
-myLight.shadow.mapSize.width = 1000;
-myLight.shadow.mapSize.height = 1000;
+const myAmbLight = new THREE.AmbientLight(0x404040); 
+scene.add(myAmbLight);
 
+scene.background = new THREE.Color("rgb(255, 255, 0)");
+// add an AxesHelper to scene
+scene.add(new THREE.AxesHelper(10));
 
+// render a scene using a camera before drawing the next frame on the screen
+renderer.setAnimationLoop(() => {
+  renderer.render(scene, camera);
+});
 
-myScene.add(myLight);
+// the coordinate of the previous mouse pointer
+let prevPointer = new THREE.Vector2();
 
-const lightHelper = new THREE.DirectionalLightHelper( myLight, 5 );
-myScene.add(lightHelper);
+// flags to check if a mouse button is pressed
+let isLeftMouseDown = false;
+let isRightMouseDown = false;
 
-const axesHelper = new THREE.AxesHelper( 50 );
-myScene.add( axesHelper );
+// whether move the camera or the cube
+let moveCamera = false;
 
-const testHelper = new VertexNormalsHelper( myMesh, 3, 0xff0000 );
-myScene.add( testHelper );
-
-axesHelper.visible = false;
-myMesh2.visible = true;
-testHelper.visible = false;
-
-animate();
-
-function animate() {
-    requestAnimationFrame( animate );
-    
-    controls.update();
-    renderer.render( myScene, camera );
+// convert the coordinate from screen space to world space
+function screenToWorld(x, y) {
+  return new THREE.Vector3(
+    (x / window.innerWidth) * 2 - 1,
+    (-y / window.innerHeight) * 2 + 1,
+    -1
+  ).unproject(camera);
 }
 
-// register event-callback functions into renderer's dom
-renderer.domElement.style = "touch-action:none";
-renderer.domElement.onpointerdown = mouseDownHandler;
-renderer.domElement.onpointermove = mouseMoveHandler;
-renderer.domElement.onpointerup = mouseUpHandler;
-renderer.domElement.onpointercancel = mouseUpHandler;
-renderer.domElement.onpointerout = mouseUpHandler;
-renderer.domElement.onpointerleave = mouseUpHandler;
+// update the aspect ratio and the size of the renderer's output canvas on window resize
+window.onresize = () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
 
-function compute_pos_ss2ws(x_ss, y_ss) {
-    return new THREE.Vector3( x_ss / render_w * 2 - 1, -y_ss / render_h * 2 + 1, -1 ).unproject( camera );
-}
+// disable contextmenu event
+document.oncontextmenu = () => {
+  return false;
+};
 
-let mouse_btn_flag = false;
-function mouseDownHandler(e) {
-  // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-  if(e.pointerType == 'mouse') {
-    mouse_btn_flag = true;
-
-    console.log("Mouse down ^^");
-
-    // to do //
-    //myMesh.position.set(10, 0, 0);
-    //myMesh.scale.set(2, 2, 2);
-    
-    //myModel.quaternion
-    //myMesh.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
-    //myMesh.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4);
-
-    let matLocal = new THREE.Matrix4();
-    const matT = new THREE.Matrix4().makeTranslation(10, 0, 0);
-    const matS = new THREE.Matrix4().makeScale(2, 2, 2);
-    const matR = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), Math.PI / 4);
-    // matLocal := matS * matT
-    //matLocal = matT.clone();//.multiply(matT); // matLocal := matLocal * matT
-    //matLocal.multiply(matR); // matLocal := matT * matR
-    //matLocal.premultiply(matS); // // matLocal := matS * matT
-    //myMesh.matrix = matLocal.clone();
-    //myMesh.matrixAutoUpdate = false;
-
-    mouseMoveHandler(e);
-  }
-  else if(e.pointerType == 'touch') {
-    evCache.push(e);
-    console.log("pointerDown", e);
-  }
-}
-
-var evCache = new Array();
-var prevDiff = -1;
-function remove_event(ev) {
-  // Remove this event from the target's cache
-  for (var i = 0; i < evCache.length; i++) {
-    if (evCache[i].pointerId == ev.pointerId) {
-      evCache.splice(i, 1);
+// update the previous mouse pointer coordinate and mouse button flags when mouse button is pressed
+document.onmousedown = (e) => {
+  prevPointer.x = e.clientX;
+  prevPointer.y = e.clientY;
+  switch (e.button) {
+    case 0:
+      isLeftMouseDown = true;
       break;
-    }
+    case 2:
+      isRightMouseDown = true;
+      break;
   }
- }
+};
 
-function mouseUpHandler(e) {
-  mouse_btn_flag = false;
-  //console.log("Mouse Up");
-  if(e.pointerType != 'touch') return;
-  // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttonlog(ev.type, ev);
-  // Remove this pointer from the cache and reset the target's
-  // background and border
-  remove_event(e);
-  // If the number of pointers down is less than two then reset diff tracker
-  if (evCache.length < 2) {
-    prevDiff = -1;
-  }
-}
+// move the camera or the cube when a mouse is moved while the button is pressed
+document.onmousemove = (e) => {
+  if (isLeftMouseDown || isRightMouseDown) {
+    let view = new THREE.Vector3();
+    let cameraPosition = new THREE.Vector3();
+    let cubePosition = new THREE.Vector3();
+    let cameraToCube = new THREE.Vector3();
+    let prevToCurr = new THREE.Vector3();
 
-let x_prev = render_w / 2;
-let y_prev = render_h / 2;
-function mouseMoveHandler(e) {
-  if(e.pointerType == 'mouse') {
+    camera.getWorldDirection(view); // the world space direction in which the camera is looking
+    camera.getWorldPosition(cameraPosition); // the position of the camera in world space
+    cube.getWorldPosition(cubePosition); // the position of the cube in world space
+    cameraToCube.subVectors(cubePosition, cameraPosition); // the world space direction from the camera to the cube
 
-    console.log("Mouse Pos SS:", e.clientX, e.clientY);
-    //const myPosSS = new THREE.Vector3(e.clientX, e.clientY, -1);
-    const myPosPS = new THREE.Vector3(
-       e.clientX / render_w * 2 - 1, 
-      -e.clientY / render_h * 2 + 1, 
-      -1);
-    
-    const myPosWS = myPosPS.clone();
-    myPosWS.unproject( camera );
-    console.log("Mouse Pos PS:", myPosPS.x, myPosPS.y, myPosPS.z);
-    console.log("Mouse Pos WS:", myPosWS.x, myPosWS.y, myPosWS.z);
+    // convert the coordinate of the mouse pointer from screen space to world space
+    let prevPosition = screenToWorld(prevPointer.x, prevPointer.y);
+    let currPosition = screenToWorld(e.clientX, e.clientY);
 
+    prevToCurr.subVectors(currPosition, prevPosition); // the world space direction from prevPosition to currPosition
 
-    if(mouse_btn_flag) {
-      let posNp = compute_pos_ss2ws(e.clientX, e.clientY);
-      // to do //
-      //console.log("Mouse Pos:", e.clientX, e.clientY);
-      //console.log("Mouse Pos:", posNp);
+    // the point p: the intersection of the near plane and a line passing through the point cameraPosition and parallel to the vector cameraToCube
+    let nearDistance = near / Math.cos(view.angleTo(cameraToCube)); // the distance from camera to the point p on the near plane
+    let cubeDistance = cameraToCube.length(); // the distance from camera to cube
 
-      x_prev = e.clientX;
-      y_prev = e.clientY;
-    }
-  }
-  else if(e.pointerType == 'touch') {
-    console.log("pointerMove", e);
-    //e.target.style.border = "dashed";
+    if (isLeftMouseDown) {
+      // if a left button is pressed
+      let rotationMatrix = new THREE.Matrix4();
 
-    // Find this event in the cache and update its record with this event
-    for (var i = 0; i < evCache.length; i++) {
-      if (e.pointerId == evCache[i].pointerId) {
-        evCache[i] = e;
-        break;
+      let axis = new THREE.Vector3().crossVectors(prevToCurr, view).normalize(); // compute axis by cross product of prevToCurr and view
+      let angle = (Math.PI / 2) * prevToCurr.length(); // compute angle by multiplying length of prevToCurr by the appropriate value
+
+      if (moveCamera) {
+        // rotate the camera
+        rotationMatrix.makeRotationFromQuaternion(
+          new THREE.Quaternion().setFromAxisAngle(axis, -angle)
+        ); // set rotationMatrix as rotation transform around axis by negative angle radians
+
+        camera.matrix.premultiply(rotationMatrix); // pre-multipliy camera's local transform matrix by rotationMatrix
+      } else {
+        // rotate the cube
+        rotationMatrix.makeRotationFromQuaternion(
+          new THREE.Quaternion().setFromAxisAngle(axis, angle)
+        ); // set rotationMatrix as rotation transform around axis by angle radians
+
+        // pre-multiply the rotation component of the cube's local transform matrix by rotationMatrix,
+        // then set the position component of the cube's local transform matrix from cubePosition
+        cube.matrix
+          .extractRotation(cube.matrix)
+          .premultiply(rotationMatrix)
+          .setPosition(cubePosition);
+      }
+    } else if (isRightMouseDown) {
+      // if a right button is pressed
+      let translationMatrix = new THREE.Matrix4();
+
+      let distanceRatio = cubeDistance / nearDistance; // ratio of cubeDistance and nearDistance
+
+      // the amount to translate is determined according to cubePosition
+      prevToCurr.multiplyScalar(distanceRatio);
+
+      if (moveCamera) {
+        // translate the camera
+        translationMatrix.makeTranslation(
+          -prevToCurr.x,
+          -prevToCurr.y,
+          -prevToCurr.z
+        );
+
+        camera.matrix.premultiply(translationMatrix); // pre-multipliy camera's local transform matrix by rotationMatrix
+      } else {
+        // translate the cube
+        translationMatrix.makeTranslation(
+          prevToCurr.x,
+          prevToCurr.y,
+          prevToCurr.z
+        );
+
+        cube.matrix.premultiply(translationMatrix); // pre-multipliy cube's local transform matrix by rotationMatrix
       }
     }
 
-    if (evCache.length == 1) {
-      // to do //
-      let posNp = compute_pos_ss2ws(e.clientX, e.clientY);
-      console.log("Mouse Pos:", posNp);
-      
-
-      x_prev = e.clientX;
-      y_prev = e.clientY;
-    }
-    // If two pointers are down, check for pinch gestures
-    else if (evCache.length == 2) {
-      console.log("Pinch moving");
-      // Calculate the distance between the two pointers
-      var curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
-
-      if (prevDiff > 0) {
-        if (curDiff > prevDiff) {
-          // The distance between the two pointers has increased
-          console.log("Pinch moving OUT -> Zoom in", e);
-          camera.near += 2.0;
-          camera.near = Math.min(camera_ar.near, camera_ar.far);
-          camera.updateProjectionMatrix();
-        }
-        if (curDiff < prevDiff) {
-          // The distance between the two pointers has decreased
-          console.log("Pinch moving IN -> Zoom out",e);
-          camera.near -= 2.0;
-          camera.near = Math.max(camera_ar.near, 1.0);
-          camera.updateProjectionMatrix();
-        }
-        
-      }
-      // Cache the distance for the next move event
-      prevDiff = curDiff;
-    }
-    e.preventDefault();
+    // update prevPointer with the current coordinate of the mouse pointer
+    prevPointer.x = e.clientX;
+    prevPointer.y = e.clientY;
   }
-}
+};
+
+// update mouse button flags when mouse button is released
+document.onmouseup = () => {
+  isLeftMouseDown = false;
+  isRightMouseDown = false;
+};
+
+// transalte the camera forward and backward with a mouse wheel
+document.onwheel = (e) => {
+  let translationMatrix = new THREE.Matrix4();
+
+  if (moveCamera) {
+    let view = new THREE.Vector3();
+    camera.getWorldDirection(view); // the world space direction in which the camera is looking
+    view.multiplyScalar(-e.deltaY / 150);
+
+    translationMatrix.makeTranslation(view.x, view.y, view.z);
+
+    camera.matrix.premultiply(translationMatrix); // pre-multipliy camera's local transform matrix by rotationMatrix
+  }
+};
+
+// press "1" to move the cube and press "2" to move the camera
+document.onkeydown = (e) => {
+  switch (e.key) {
+    case "1":
+      moveCamera = false;
+      break;
+    case "2":
+      moveCamera = true;
+      break;
+  }
+};
