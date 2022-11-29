@@ -123,6 +123,18 @@ envRectMap.mapping = THREE.EquirectangularReflectionMapping;
 
 scene.background = envRectMap;
 
+const patternMap = textureLoader.load('./pattern.jpg');
+patternMap.anisotropy = 10;
+patternMap.wrapS = patternMap.wrapT = THREE.RepeatWrapping;
+patternMap.repeat.set( 10, 10 );
+
+const groundMesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshBasicMaterial( { color: 0x999999 } ) );
+groundMesh.rotation.x = - Math.PI / 2;
+groundMesh.position.y = -10;
+groundMesh.material.map = patternMap;
+
+//groundMesh.receiveShadow = true;
+scene.add( groundMesh );
 
 const cubeGeo = new THREE.BoxGeometry(10, 10, 10);
 console.log(cubeGeo.getAttribute('normal'));
