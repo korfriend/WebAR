@@ -1,5 +1,5 @@
 <header>
-    <title>CG Practice 1</title>
+    <title>CG Practice 5</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -25,11 +25,13 @@
 
     <script id="vertexShader" type="x-shader/x-vertex">
 
-        precision mediump float;
-        precision mediump int;
+        precision highp float;
+        precision highp int;
 
         uniform mat4 modelViewMatrix; // optional
         uniform mat4 projectionMatrix; // optional
+
+        uniform int myTestParam;
 
         attribute vec3 position;
         attribute vec3 normal;
@@ -43,6 +45,10 @@
             vPosition = position;
             vColor = vec4(uv.xy, 1, 1);
 
+            if(myTestParam == 777) {
+                //vColor = vec4(myTestParamVec3, 1);
+            }
+
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 
         }
@@ -51,10 +57,11 @@
 
     <script id="fragmentShader" type="x-shader/x-fragment">
 
-        precision mediump float;
-        precision mediump int;
+        precision highp float;
+        precision highp int;
 
         uniform float time;
+        uniform vec3 myTestParamVec3;
 
         varying vec3 vPosition;
         varying vec4 vColor;
@@ -64,11 +71,11 @@
             vec4 color = vec4( vColor );
             //color.r += sin( vPosition.x * 10.0 + time ) * 0.5;
 
-            gl_FragColor = vec4(1, 0, 0, 1);//color;
+            gl_FragColor = vec4(myTestParamVec3, 1);//color;
 
         }
 
     </script>
 
-    <script type="module" src="./practice.js"></script>
+    <script type="module" src="./practice5.js"></script>
 </body>                          

@@ -99,6 +99,8 @@ const material = new THREE.RawShaderMaterial( {
 
   uniforms: {
     time: { value: 1.0 },
+    myTestParam : { value: 777 },
+    myTestParamVec3 : { value: new THREE.Vector3(0, 1, 1) },
   },
   vertexShader: document.getElementById( 'vertexShader' ).textContent,
   fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
