@@ -28,8 +28,10 @@
         precision mediump float;
         precision mediump int;
 
-        uniform mat4 modelViewMatrix; // optional
-        uniform mat4 projectionMatrix; // optional
+        uniform mat4 modelViewMatrix; 
+        uniform mat4 projectionMatrix; 
+        // Assignment TO DO //
+        // get your model matrix
 
         attribute vec3 position;
         attribute vec3 normal;
@@ -39,6 +41,9 @@
         varying vec4 vColor;
 
         void main()	{
+            // Assignment TO DO //
+            // choose your lighting space (world or camera space)
+            // transform position and normal accordingly 
 
             vPosition = position;
             vColor = vec4(uv.xy, 1, 1);
@@ -55,16 +60,25 @@
         precision mediump int;
 
         uniform float time;
+        // Assignment TO DO //
+        // get Point Light position
+        // get Point Light color
+        // get Amient Light color
+        // get Camera position
+        // get Material color
 
         varying vec3 vPosition;
         varying vec4 vColor;
+        // Assignment TO DO //
+        // get necessary attributes (interpolated)
 
         void main()	{
 
             vec4 color = vec4( vColor );
-            //color.r += sin( vPosition.x * 10.0 + time ) * 0.5;
 
-            gl_FragColor = vec4(1, 0, 0, 1);//color;
+            // compute Phong Lighting
+
+            gl_FragColor = color;
 
         }
 
