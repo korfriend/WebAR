@@ -89,7 +89,26 @@ const myGeo = new THREE.BoxGeometry(10, 10, 10);
 console.log(myGeo.getAttribute('uv'));
 
 const textureLoader = new THREE.TextureLoader();
-const myTex = textureLoader.load('./lab5.jpg');
+
+const r = '../textureimg/';
+
+const urls = [
+  r + 'px.png', r + 'nx.png',
+  r + 'py.png', r + 'ny.png',
+  r + 'pz.png', r + 'nz.png'
+];
+
+//const textureCube = new THREE.CubeTextureLoader().load( urls );
+//textureCube.mapping = THREE.CubeRefractionMapping;
+//textureCube.mapping = THREE.CubeReflectionMapping;
+
+const textureEquirec = textureLoader.load( '../myenv.jpg' );
+textureEquirec.mapping = THREE.EquirectangularReflectionMapping;
+//textureEquirec.encoding = THREE.sRGBEncoding;
+
+//material.needsUpdate = true;
+//scene.background = textureEquirec;
+scene.background = textureEquirec;
 
 // material setting
 //const material = new THREE.MeshBasicMaterial({ wireframe: false });
@@ -99,6 +118,9 @@ const material = new THREE.RawShaderMaterial( {
 
   uniforms: {
     time: { value: 1.0 },
+    envMap: { value: textureEquirec },
+    posEye: { value: camera.position },
+    modelMatrix: { value: new THREE.Matrix4() }
   },
   vertexShader: document.getElementById( 'vertexShader' ).textContent,
   fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
@@ -107,8 +129,7 @@ const material = new THREE.RawShaderMaterial( {
 
 } );
 
-
-
+material.envMap = textureEquirec;
 
 // cube model
 const cube = new THREE.Mesh(myGeo, material);
@@ -123,39 +144,20 @@ scene.add(myLight);
 const myAmbLight = new THREE.AmbientLight(0x404040); 
 scene.add(myAmbLight);
 
-scene.background = new THREE.Color("rgb(255, 255, 0)");
+// scene.background = new THREE.Color("rgb(255, 255, 0)");
 // add an AxesHelper to scene
 scene.add(new THREE.AxesHelper(10));
-
-const r = '../textureimg/';
-
-const urls = [
-  r + 'px.png', r + 'nx.png',
-  r + 'py.png', r + 'ny.png',
-  r + 'pz.png', r + 'nz.png'
-];
-
-const textureCube = new THREE.CubeTextureLoader().load( urls );
-textureCube.mapping = THREE.CubeRefractionMapping;
-//textureCube.mapping = THREE.CubeReflectionMapping;
-
-const textureEquirec = textureLoader.load( '../myenv.jpg' );
-textureEquirec.mapping = THREE.EquirectangularReflectionMapping;
-//textureEquirec.encoding = THREE.sRGBEncoding;
-
-material.envMap = textureEquirec;
-//material.needsUpdate = true;
-
-//scene.background = textureEquirec;
-
-
-scene.background = textureEquirec;
-
-
 
 
 // render a scene using a camera before drawing the next frame on the screen
 renderer.setAnimationLoop(() => {
+
+  const posEye = new THREE.Vector3();
+  camera.getWorldPosition(posEye);
+  material.uniforms.posEye.value = posEye;
+  cube.updateMatrixWorld();
+  material.uniforms.modelMatrix.value = cube.matrixWorld;
+
   renderer.render(scene, camera);
 });
 
