@@ -19,35 +19,34 @@ function init() {
     const geometry = new THREE.PlaneGeometry( 2, 2 );
     console.log(geometry);
 
+    //textureLoader.load( '../cg_lab5/lab5.jpg', function( texture ) {
+    //    console.log( 'Texture dimensions: %sx%s', texture.image.width, texture.image.height );
+    //    myTex = texture;
+    //    console.log(myTex.image);
+    //});
+
     const textureLoader = new THREE.TextureLoader();
     myTex = textureLoader.load('../cg_lab5/lab5.jpg');
-    myTex.magFilter = THREE.LinearFilter;
-
-    var loader = new THREE.TextureLoader();
-		
-    loader.load( '../cg_lab5/lab5.jpg', function( texture ) {
-        console.log( 'Texture dimensions: %sx%s', texture.image.width, texture.image.height );
-        myTex = texture;
-        console.log(myTex.image);
-    });
-    console.log(myTex.image);
-    
-    //myTex.minFilter = THREE.NearestFilter;
 
     uniforms = {
-        time: { value: 1.0 },
         myTexImg: {value: myTex},
         bufferSize: {value: new THREE.Vector2(window.innerWidth, window.innerHeight)},
-        //imgSize: {value: null}
         imgSize: {value: myTex.image!= null ? new THREE.Vector2(myTex.image.width, myTex.image.height) : null}
     };
+    
+    
+    myTex.magFilter = THREE.LinearFilter;
+    //console.log( 'Texture dimensions: %sx%s', texture.image.width, texture.image.height );
+    //myTex.minFilter = THREE.NearestFilter;
+
+    //myTex.wrapS = THREE.MirroredRepeatWrapping        ;
+    myTex.wrapT = THREE.MirroredRepeatWrapping;
 
     //THREE.UniformsLib
 
     const material = new THREE.ShaderMaterial( {
 
         uniforms: uniforms,
-        //map: 
         vertexShader: document.getElementById( 'vertexShader' ).textContent,
         fragmentShader: document.getElementById( 'fragmentShader' ).textContent
 
@@ -83,7 +82,6 @@ function animate() {
     requestAnimationFrame( animate );
 
     //console.log(performance.now());
-    uniforms[ 'time' ].value = performance.now() / 1000;
     uniforms['myTexImg'].value = myTex;
     //if(myTex.image != null)
     //console.log(myTex.image);

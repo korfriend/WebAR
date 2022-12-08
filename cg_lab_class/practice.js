@@ -119,8 +119,6 @@ const material = new THREE.RawShaderMaterial( {
   uniforms: {
     time: { value: 1.0 },
     envMap: { value: textureEquirec },
-    posEye: { value: camera.position },
-    modelMatrix: { value: new THREE.Matrix4() }
   },
   vertexShader: document.getElementById( 'vertexShader' ).textContent,
   fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
@@ -151,13 +149,6 @@ scene.add(new THREE.AxesHelper(10));
 
 // render a scene using a camera before drawing the next frame on the screen
 renderer.setAnimationLoop(() => {
-
-  const posEye = new THREE.Vector3();
-  camera.getWorldPosition(posEye);
-  material.uniforms.posEye.value = posEye;
-  cube.updateMatrixWorld();
-  material.uniforms.modelMatrix.value = cube.matrixWorld;
-
   renderer.render(scene, camera);
 });
 

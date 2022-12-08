@@ -38,9 +38,11 @@
 			varying vec2 vUv;
 
 			uniform float time;
-            uniform sampler2D myTexImg;
-            uniform vec2 bufferSize;
+            
+			uniform sampler2D myTexImg;
             uniform vec2 imgSize;
+
+            uniform vec2 bufferSize;
 
 			float RGB2Gray(vec3 color) {
 				float minColor = min(min(color.r, color.b), color.b);
@@ -57,7 +59,8 @@
                     //imgRGB = texture2D(myTexImg, vec2(gl_FragCoord.x/imgSize.x, gl_FragCoord.y/imgSize.y)).rgb;
 					vec2 uv = gl_FragCoord.xy / imgSize.xy;
 					vec2 offset = 1.0 / imgSize.xy;
-					if(uv.x <= 1.0 && uv.x >= 0.0 && uv.y <= 1.0 && uv.y >= 0.0) {
+					if(uv.x <= 1.0 && uv.x >= 0.0 && uv.y <= 1.0 && uv.y >= 0.0) 
+					{
 
 						float gray0 = RGB2Gray(texture2D(myTexImg, uv + vec2(-offset.x, offset.y)).rgb);
 						float gray1 = RGB2Gray(texture2D(myTexImg, uv + vec2(-offset.x, 0)).rgb);
@@ -78,13 +81,16 @@
 	                    //imgRGB += texture2D(myTexImg, uv + vec2(-offset.x, 0)).rgb;
 	                    //imgRGB += texture2D(myTexImg, uv + vec2(-offset.x, -offset.y)).rgb;
 						//imgRGB /= 9.0;
-						imgRGB = vec3(sobel);
+						//imgRGB = vec3(sobel);
 					}
 				}
                 else
                     imgRGB = texture2D(myTexImg, vUv).rgb;
                 
 				gl_FragColor = vec4( imgRGB, 1.0 );
+
+				vec2 uv = gl_FragCoord.xy / imgSize.xy;
+				gl_FragColor = vec4( texture2D(myTexImg, uv).rgb, 1.0 );
 			}
 
 		</script>

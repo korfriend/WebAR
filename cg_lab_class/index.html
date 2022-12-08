@@ -28,33 +28,26 @@
         precision mediump float;
         precision mediump int;
 
-        uniform mat4 modelViewMatrix; 
-        uniform mat4 projectionMatrix; 
         // Assignment TO DO //
         // get your model matrix
-        uniform mat4 modelMatrix; 
+        uniform mat4 modelViewMatrix; 
+        uniform mat4 projectionMatrix; 
 
         attribute vec3 position;
         attribute vec3 normal;
-        attribute vec2 uv;
 
         varying vec3 vPosition;
         varying vec3 vNormal;
-        varying vec4 vColor;
 
         void main()	{
-            // Assignment TO DO //
+            // Assignment TO DO //image.png
             // choose your lighting space (world or camera space)
             // transform position and normal accordingly 
 
-            vec4 posWS = modelMatrix * vec4(position, 1.0);
-            vPosition = posWS.xyz / posWS.w;
-            vec4 normalWS = modelMatrix * vec4(normal, 1.0);
-            vNormal = normalWS.xyz;
-            vColor = vec4(uv.xy, 1, 1);
+            vPosition = position;
+            vNormal = normal;
 
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
         }
 
     </script>
@@ -66,8 +59,6 @@
         precision mediump float;
         precision mediump int;
 
-        uniform float time;
-        uniform vec3 posEye;
         uniform sampler2D envMap;
         // Assignment TO DO //
         // get Point Light position
@@ -75,44 +66,15 @@
         // get Amient Light color
         // get Camera position
         // get Material color
+        // get Shininess factor
 
-        varying vec3 vPosition;
-        varying vec3 vNormal;
-        varying vec4 vColor;
         // Assignment TO DO //
         // get necessary attributes (interpolated)
 
         void main()	{
-
-            vec4 color = vec4( vColor );
-
             // compute Phong Lighting
 
-            vec3 V = normalize(posEye - vPosition);
-            vec3 N = normalize(vNormal);
-            vec3 R = normalize(2.0 * dot(vNormal, V) * vNormal - V);
-            
-            float phi = asin(R.z); // 90~-90
-            float cosphi = cos(phi);
-            float theta = acos(max(min(R.x / cos(phi), 0.999),-0.999));
-            //float u = R.y >= 0.0 ? theta / (2.0 * X_PI) : (2.0 * X_PI - theta) / (2.0 * X_PI);
-            //float v = (X_PI / 2.0 - phi) / X_PI;
-            //float u = R.y >= 0.0 ? theta / (2.0 * X_PI) : (2.0 * X_PI - theta) / (2.0 * X_PI);
-            //float v = R.z >= 0.0 ? (X_PI / 2.0 - phi) / X_PI : (X_PI / 2.0 - phi) / X_PI;
-
-            //float u = (atan( R.x / R.z ) + X_PI) / (2.0 * X_PI);
-            //float v = (asin( R.y ) + X_PI / 2.0) / (X_PI);
-            
-            float m = 2.0 * sqrt(R.x * R.x + R.y * R.y + (R.z + 1.0) * (R.z + 1.0));
-            float u = R.x / m  + 0.5;
-            float v = R.y / m  + 0.5;
-
-            
-            vec3 colorEnv = texture2D( envMap, vec2(u, v) ).rgb;
-
-            //gl_FragColor = vec4(u, v, 1, 1);
-            gl_FragColor = vec4(colorEnv, 1);
-
+            gl_FragColor = vec4(1, 1, 0, 1);
         }
 
     </script>
